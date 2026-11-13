@@ -1,6 +1,6 @@
 # Spec：tab-leader
 
-<!-- spec-guard: review approved 4e1ebee73d99 -->
+<!-- spec-guard: review approved 4a609f3de468 -->
 
 > 状态：**已批准（仓库所有者，2026-11-13）**　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
 > 相关文档：选型调研 [docs/research/selection.md](../docs/research/selection.md)、架构 [docs/architecture/overview.md](../docs/architecture/overview.md)、兼容性 [docs/compatibility.md](../docs/compatibility.md)、发布策略 [docs/release.md](../docs/release.md)。
@@ -313,6 +313,7 @@ docs/
   compatibility.md           浏览器兼容与证据
   guide/api.md               API 参考
   guide/recipes.md           场景示例（含配合 BroadcastChannel 分发消息）
+  guide/migration.md         从自研实现迁移的通用说明
   release.md                 版本与发布策略
   adr/NNNN-*.md              架构决策记录
 spec/CAPABILITY-MAP.md、spec/tab-leader.md   能力图与本需求文档
@@ -394,7 +395,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 
 ## 11. 成功标准
 
-0.1.0 发到 `next` 之前必须全部满足：
+本模块完成时必须全部满足（对应[发布策略](../docs/release.md#验证阶段)的 V1～V3；模块完成即可交出 tgz 包给首个接入方联调，**不等于可以发布**）：
 
 - **AC1** `pnpm test` 全部通过；§9.1 的场景都有对应用例；变异清单逐条验证，每条都有用例失败；覆盖率达标。
 - **AC2** `pnpm test:browser` 在 Chromium、Firefox、WebKit 上全部通过（§9.2 中标「仅 Chromium」「尽力」的按说明处理）。
@@ -406,7 +407,9 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 - **AC8** `pnpm check:terms --history` 通过：工作区和全部 git 历史里没有内部敏感词。
 - **AC9** 示例页 `pnpm demo` 能在本地打开，多开标签页能看到 Leader 切换。
 
-打 `latest` 的条件另见[发布策略](../docs/release.md)：旧版本手动实测通过，且首个接入方线上稳定运行两周。
+- **AC10** 交出可供联调的 tgz 包和通用的迁移说明 `docs/guide/migration.md`（从自研实现迁移：怎么沿用旧的 `name` 和存储格式、新旧实现混开时的行为、`checkNow` 改为 `check` 这类差异的通用写法）。
+
+发 `next` 的条件是 V1～V5 全部通过（V4 首个接入方本地联调、V5 旧版本实测在本模块之外进行），打 `latest` 的条件是 V6、V7 通过，详见[发布策略](../docs/release.md#验证阶段)。
 
 ## 12. 待定问题
 
@@ -427,7 +430,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 - 使用 Spec Guard：能力图只有一个模块 `tab-leader`。
 - 定位：认真面向社区，希望外部开发者使用。
 - 验证两层：每次提交 CI 跑 Chromium、Firefox、WebKit 当前版本；每次发版前在旧版本上手动实测并记录。
-- 发布三步：0.1.0 先发 `next` 给首个接入方 → 旧版本实测通过且首个接入方线上稳定两周后打 `latest` → API 稳定前保持 0.x。
+- 验证分七个阶段（发布策略 V1～V7）：本模块完成 V1～V3 并交出 tgz；首个接入方用 tgz 本地联调（V4）和旧版本实测（V5）都通过后，才发 0.1.0 到 `next`（V6）；接入方线上稳定两周后打 `latest`（V7）；API 稳定前保持 0.x。（2026-11-13 调整：原为「先发 `next` 再给接入方试用」）
 - 0.x 不做消息分发。
 - 工具链按 ADR-0005：TypeScript 6.0（不用 7.0，因为 typescript-eslint 不支持）、tsdown、vitest、Playwright、ESLint + typescript-eslint + eslint-plugin-compat + Prettier，不用脚手架；代码检查选 ESLint 而不是 oxlint，因为 oxlint 加载 eslint-plugin-compat 只能走 alpha 的 JS 插件机制。
 - 兼容范围以 `package.json` 的 browserslist 为唯一来源；tsconfig `lib` 设为 `["ES2017", "DOM"]`。
@@ -443,3 +446,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 初稿；按需求拷问的结论补充真实浏览器测试、示例页、发版前旧版本实测、三步发布、0.x 不做消息分发、文档与治理文件、不出现内部信息等要求 |
 | 2026-11-13 | 补充工具链选型（ADR-0005）：TypeScript 由 7.0 改为 6.0，新增 ESLint、Prettier 与 `pnpm lint`，Node 下限改为 22.18，Q1 随之改写 |
 | 2026-11-13 | 代码检查确定用 ESLint（不用 oxlint），新增 eslint-plugin-compat、browserslist 唯一来源、tsconfig `lib: ["ES2017", "DOM"]`；ADR-0005 改正「oxlint 没有类型规则」的错误描述 |
+| 2026-11-13 | 按七个验证阶段调整发布节奏：发 `next` 之前先完成首个接入方本地联调（V4）和旧版本实测（V5）；§11 改为本模块完成时的标准，新增 AC10（交出 tgz 与迁移说明） |

@@ -7,7 +7,7 @@
 
 ## 概述
 
-从空仓库做到「可以发 `0.1.0` 到 `next`」：工程与工具链 → 下层 `createTabLeader`（solo → locks → 停摆接管 → lease）→ 上层 `createTabInterval` → 变异检查 → 示例页与 Playwright → 打包验证、体积报告 → 文档定稿与治理文件。发布本身（`npm publish`）、建远端仓库、推送**不在本计划内**，到时另问。
+从空仓库做到「库本身可以交给首个接入方联调」，即[发布策略](../../docs/release.md#验证阶段)的 V1～V3：工程与工具链 → 下层 `createTabLeader`（solo → locks → 停摆接管 → lease）→ 上层 `createTabInterval` → 变异检查 → 示例页与 Playwright → 打包验证、体积报告 → 文档定稿与治理文件。V4（首个接入方用 tgz 本地联调）、V5（旧版本实测）、V6（发 `next`）、V7（打 `latest`）**不在本计划内**；建远端仓库、推送、发布到时另问。
 
 ## 架构决定
 
@@ -107,16 +107,16 @@
 - 文件：`scripts/verify-consumers.mjs`、`package.json`
 
 **T13 文档定稿与治理文件**（M）
-- 内容：API 参考按 `src/types.ts` 定稿（去掉「草案」）；场景示例逐个实跑；两版 README 同步并去掉「开发中」里与实际不符的说法（仍注明未发布）；`AGENTS.md` 命令段去掉「还不存在」；新增 `CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md`、`.github/ISSUE_TEMPLATE/`（bug、功能建议）。
+- 内容：新增 `docs/guide/migration.md`（从自研实现迁移的通用说明，AC10）；API 参考按 `src/types.ts` 定稿（去掉「草案」）；场景示例逐个实跑；两版 README 同步并去掉「开发中」里与实际不符的说法（仍注明未发布）；`AGENTS.md` 命令段去掉「还不存在」；新增 `CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md`、`.github/ISSUE_TEMPLATE/`（bug、功能建议）。
 - 验收：AC7 逐项核对；相对链接检查无断链；两版 README 段落一一对应。
-- 文件：`docs/guide/api.md`、`docs/guide/recipes.md`、`README.md`、`README.en.md`、`AGENTS.md`、`CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md`、`.github/ISSUE_TEMPLATE/*`
+- 文件：`docs/guide/migration.md`、`docs/guide/api.md`、`docs/guide/recipes.md`、`README.md`、`README.en.md`、`AGENTS.md`、`CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md`、`.github/ISSUE_TEMPLATE/*`
 
 **T14 CI 配置文件**（XS）
 - 内容：`.github/workflows/ci.yml`：Node 22 与 24；`pnpm install --frozen-lockfile`、`lint`、`typecheck`、`test`、`build`、`test:browser`。**只写文件，不推送**；推送后才会生效，到时另问。
 - 验收：用 `actionlint` 不可用时，至少人工核对 YAML 语法与命令与 `package.json` 一致。
 - 文件：`.github/workflows/ci.yml`
 
-**检查点 C5（gate）：最终验收**。按 AC1～AC9 逐条给证据，附改动文件表、新增依赖表、提交表。**不含推送、建远端仓库和发布**，这些在验收后另问。
+**检查点 C5（gate）：最终验收**。按 AC1～AC10 逐条给证据，附改动文件表、新增依赖表、提交表；交出 tgz 包（放在仓库外的共享目录，不提交进仓库）。**不含推送、建远端仓库和发布**。验收通过后，通知负责首个接入方的会话开始 V4 联调；联调发现的问题回到本仓库，按修复走一轮 V1～V3 再出新的 tgz。
 
 ## 会改哪些文件
 
@@ -132,6 +132,7 @@
 | `docs/guide/api.md`、`docs/guide/recipes.md` | T13 | 草案 → 定稿 |
 | `README.md`、`README.en.md` | T13 | 同步实际实现 |
 | `docs/compatibility.md` | C4、T13 | 补 CI 三引擎结果；旧版本行仍为「推断」，发版前手动实测再改 |
+| `docs/guide/migration.md` | T13 | 新建 |
 | `CHANGELOG.md`、`CONTRIBUTING.md`、`SECURITY.md`、Issue 模板 | T13 | 新建 |
 | `AGENTS.md` | T13 | 命令段更新 |
 
@@ -150,7 +151,7 @@
 ## 中途会停下来问你的地方
 
 - **C3（gate）**：核心库完成后，看 API 与 Spec 的出入、单测与变异、Q1、体积，再继续。
-- **C5（gate）**：最终验收。
+- **C5（gate）**：最终验收，交出 tgz，之后进入 V4。
 - 两个 gate 都**不含推送、建远端仓库、发布**。
 - 另外只在这些情况停下：C1 的 Q1 不通过且调整无效；测试改不红；Spec 没覆盖的决定；同一目标第二次过不去；权限被拒。
 
@@ -163,3 +164,4 @@
 | 日期 | 变更 |
 |---|---|
 | 2026-11-13 | 初稿 |
+| 2026-11-13 | 按七个验证阶段调整：本计划覆盖 V1～V3；T13 新增迁移说明；C5 交出 tgz 并通知开始 V4 |
