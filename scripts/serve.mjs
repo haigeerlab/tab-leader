@@ -1,11 +1,14 @@
 // Minimal static server for the demo page and browser tests. Serves only /demo and /dist.
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
+import { networkInterfaces } from 'node:os'
 import { extname, join, normalize, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const port = Number(process.env.PORT) || 4789
+// HOST=0.0.0.0 lets other devices on the local network open the demo (manual tests on old browsers).
+const host = process.env.HOST || '127.0.0.1'
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -39,6 +42,13 @@ createServer(async (req, res) => {
     res.writeHead(404)
     res.end('Not found')
   }
-}).listen(port, '127.0.0.1', () => {
+}).listen(port, host, () => {
   console.log(`tab-leader demo: http://127.0.0.1:${port}/demo/`)
+  if (host === '127.0.0.1') return
+  for (const list of Object.values(networkInterfaces())) {
+    for (const net of list || []) {
+      if (net.family === 'IPv4' && !net.internal)
+        console.log(`  on the local network: http://${net.address}:${port}/demo/`)
+    }
+  }
 })
