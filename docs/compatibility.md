@@ -56,7 +56,7 @@ Playwright 在 Chromium、Firefox、WebKit **当前版本**上跑多标签页场
 | 浏览器 | 版本 | 档 | 结果 | 日期 | 证据类型 |
 |---|---|---|---|---|---|
 | Chrome | 80 | `locks` | 前身实现实测通过：多标签页只有一个 Leader、不同 `name` 互不影响；冻结接管未测 | 2026-11-13 | 实测（前身实现，不是本库） |
-| Chrome | 80 | `locks` | 本库待测 | — | 推断 |
+| Chrome | 80 | `locks` | 本库 0.1.0 在首个接入方页面（HTTPS）实测通过：两个标签页只有一个 Leader、不同 `name` 各有一个 Leader 互不影响、与前身实现混开共用同一份记录不重复执行；冻结接管、bfcache 未测 | 2026-11-13 | 实测（本库，接入方页面） |
 | Firefox | 74 | `lease` | 待测 | — | 推断 |
 | Safari | 13.1 | `lease` | 待测 | — | 推断 |
 | iOS Safari | 12.4 | `lease` | 待测 | — | 推断 |
