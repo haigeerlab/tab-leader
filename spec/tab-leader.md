@@ -1,8 +1,8 @@
 # Spec：tab-leader
 
-<!-- spec-guard: review pending -->
+<!-- spec-guard: review approved 4e1ebee73d99 -->
 
-> 状态：待批准　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
+> 状态：**已批准（仓库所有者，2026-11-13）**　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
 > 相关文档：选型调研 [docs/research/selection.md](../docs/research/selection.md)、架构 [docs/architecture/overview.md](../docs/architecture/overview.md)、兼容性 [docs/compatibility.md](../docs/compatibility.md)、发布策略 [docs/release.md](../docs/release.md)。
 > 本文只写「做什么、做到什么程度算完」；「为什么这样设计」写在架构文档里，引用本文的规则编号（R*、I*），不复制规则原文。
 
