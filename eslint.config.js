@@ -36,5 +36,7 @@ export default tseslint.config(
   {
     files: ['test/**/*.ts', 'e2e/**/*.ts', 'scripts/**/*.mjs', '*.config.{js,ts}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    // The fake browser mirrors loosely typed DOM events.
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
   },
 )
