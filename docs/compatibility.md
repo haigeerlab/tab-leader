@@ -12,7 +12,7 @@
 | Safari（Mac） | 13.1 | 13.1～15.3：`lease`；15.4 起：`locks` | Safari 15.4 起有 Web Locks |
 | iOS Safari | 12.4 | 12.4～15.3：`lease`；15.4 起：`locks` | iOS 15.4 起有 Web Locks |
 | Android Chrome、App 内置 WebView | 跟随系统 | 按功能检测 | — |
-| 任意浏览器、localStorage 被禁用 | — | 有 Web Locks 走 `locks`（无停摆接管）；否则 `solo` | — |
+| 任意浏览器、localStorage 被禁用 | — | Web Locks 仍可用时走 `locks`（无停摆接管）；否则 `solo` | Chrome「阻止所有 Cookie 和网站数据」会让 `navigator.locks.request()` 也立即被拒绝，这时走 `solo`（R8a） |
 
 最低版本在代码里的唯一来源是 `package.json` 的 browserslist（`chrome >= 80, edge >= 80, firefox >= 74, safari >= 13.1, ios_saf >= 12.4`），eslint-plugin-compat 按它检查浏览器 API；改下限要同时改它和本文。
 
@@ -57,6 +57,8 @@ Playwright 在 Chromium、Firefox、WebKit **当前版本**上跑多标签页场
 |---|---|---|---|---|---|
 | Chrome | 80 | `locks` | 前身实现实测通过：多标签页只有一个 Leader、不同 `name` 互不影响；冻结接管未测 | 2026-11-13 | 实测（前身实现，不是本库） |
 | Chrome | 80 | `locks` | 本库 0.1.0 在首个接入方页面（HTTPS）实测通过：两个标签页只有一个 Leader、不同 `name` 各有一个 Leader 互不影响、与前身实现混开共用同一份记录不重复执行；冻结接管、bfcache 未测 | 2026-11-13 | 实测（本库，接入方页面） |
+| Chrome | 80.0.3987.0 | `locks` | 本库 0.1.0 示例页（CDP 自动执行）：1～6、8 通过；第 6 步冻结后 5.3 秒接手，解冻后旧 Leader 收到 `onFollower`；第 7 步运行者在后台时 5 次、间隔 5.86～6.71 秒（前台对照 6 次、5.00 秒）；第 8 步重新加载，未从 bfcache 恢复；第 9 步**失败**：阻止所有网站数据时页面卡死，已按 R8a 修复，待复测；第 10 步无痕上下文里三个标签页只有一个 Leader；控制台无报错 | 2026-11-13 | 实测（本库，示例页） |
+| Chrome | 80.0.3987.0 | `lease` | 本库 0.1.0 示例页，非安全上下文的 HTTP 地址：1～6、8 通过；第 6 步冻结后 5.3 秒接手；第 7 步后台运行 5 次、间隔 5.63～6.72 秒；第 8 步重新加载；第 9 步通过，`mode` 为 `solo`；第 10 步只有一个 Leader；控制台无报错 | 2026-11-13 | 实测（本库，示例页） |
 | Firefox | 74 | `lease` | 待测 | — | 推断 |
 | Safari | 13.1 | `lease` | 待测 | — | 推断 |
 | iOS Safari | 12.4 | `lease` | 待测 | — | 推断 |
@@ -110,9 +112,9 @@ Playwright 在 Chromium、Firefox、WebKit **当前版本**上跑多标签页场
 | 4 | 刷新现在的 Leader 标签页，刷新后逐个查看 | 任何时候都只有一个 Leader；刷新的那个页面日志从 `started` 重新开始 |
 | 5 | 另开两个 `/demo/?name=v5-5&F` 的标签页 | 它们之间另选一个 Leader，与第 2～4 步的那组互不影响（两组各有一个 Leader） |
 | 6 | **后台与冻结**（见下表），之后回到原来的 Leader 标签页 | 冻结期间别的标签页接手；回来后旧 Leader 日志里有 `onFollower`，最终只有一个 Leader |
-| 7 | 关掉其他标签页，开三个 `/demo/?name=v5-7&F`，从打开第一个起等 30 秒 | 把三个标签页日志里的 `interval run` 按时间合在一起：共 6～7 次，相邻两次相隔不少于 5 秒。间隔任务自己单独选主，运行它的标签页不一定是页面上显示 Leader 的那个 |
+| 7 | 关掉其他标签页，开三个 `/demo/?name=v5-7&F`，从打开第一个起等 30 秒 | 把三个标签页日志里的 `interval run` 按时间合在一起，**相邻两次相隔不少于 5 秒**。次数供参考：运行它的标签页在前台时 6～7 次；在后台时计时器被节流，次数会少一些（例如 5 次、间隔 6 秒左右），也算通过。间隔任务自己单独选主，运行它的标签页不一定是页面上显示 Leader 的那个 |
 | 8 | 在 Leader 标签页的地址栏打开 `/demo/?name=v5-8-elsewhere`，再按「后退」回来 | 回来后只有一个 Leader。日志里没有新的 `started` 说明页面是从 bfcache 恢复的，有就说明重新加载了，两种都记下来 |
-| 9 | （可选）在浏览器设置里禁用网站数据（Cookie 与网站数据），重新打开示例页 | `mode` 为 `solo`（Chrome 80 本机地址仍为 `locks`，见第 1 节最后一行），页面正常 |
+| 9 | （可选）在浏览器设置里禁用网站数据（Cookie 与网站数据），重新打开示例页 | `mode` 为 `solo`，页面正常、能操作（不卡死） |
 | 10 | **无痕模式**（Safari 13.1、iOS 12.4 必测，其他浏览器有条件再测）：打开一个无痕窗口，在里面开三个 `/demo/?name=v5-10&F` 的标签页，逐个查看 | 记录观察结果，不按通过或失败判定：三个标签页里有几个 Leader、`mode` 各是什么。**只有一个 Leader** 说明无痕标签页之间共享 localStorage；**每个都是 Leader 且 `mode` 为 `lease`** 说明各标签页的存储互相隔离，本库在这种情况下等同于各自运行，要写进 README 的「已知限制」 |
 
 第 6 步各浏览器的做法：

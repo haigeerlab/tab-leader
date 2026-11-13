@@ -169,7 +169,8 @@ export interface TabLeaderEnv {
   - 找不到存活记录、记录损坏、记录时间在未来（时钟回拨），都按「没停摆」处理。这样不写存活记录的旧实现（见 U3）不会被误抢。
   - 没有 localStorage 时不做停摆接管，属于已知限制。
 - **R7** 被抢锁的旧 Leader：`request()` 以 `AbortError` 拒绝且代次未变时，失去 Leader（调 `onFollower`），然后重新排队。
-- **R8** 其他拒绝（例如浏览器在页面卸载时清理）同样按失去 Leader 处理并重新排队；已暂停或已销毁则不再排队。
+- **R8** 拿到过锁之后的其他拒绝（例如浏览器在页面卸载时清理）同样按失去 Leader 处理并重新排队；已暂停或已销毁则不再排队。
+- **R8a** **还没拿到锁就被拒绝**（回调一次都没执行，例如 Chrome 在安全上下文里阻止所有网站数据时，`request()` 会立即以 `SecurityError` 拒绝）且代次未变：视为 Web Locks 在这个环境不可用，按 R2 降到下一档（`canStore` 时 `lease`，否则 `solo`），**不重新排队**。立即重试会再被立即拒绝，形成只有微任务的循环，卡死页面主线程。
 
 ### 3.3 租约档
 
@@ -374,6 +375,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 |---|---|
 | Web Locks | 5 个标签页只有一个 Leader；Leader 关闭后其他标签页接手；排队中被暂停的标签页拿到锁后立即释放；Leader 被冻结超过 `stallTimeout` 后被接管；短暂挂起（未超过阈值）不被抢；被抢的旧 Leader 解冻后收到 `onFollower`、回到排队；R5：旧 Leader 发现存活记录不是自己的就先让出；没有存活记录时不抢 |
 | 租约 | 3 个标签页只有一个 Leader；正常关闭删掉租约、其他标签页立即接手；挂起超过有效期后被接手；旧 Leader 恢复后放弃；运行中存储失效降级为 solo；pagehide 时删掉租约 |
+| Web Locks 不可用 | `request()` 未授予就立即拒绝：存储可用时降到 `lease` 且只有一个 Leader，不可用时降到 `solo`；请求次数等于标签页数（不重试），真实事件循环没有被卡住；上层只运行一次（R8a） |
 | 通用 | 能力四种组合（有无 Web Locks × 有无 localStorage）；`strategy` 起始档；bfcache 暂停与恢复、重复 pageshow、普通加载的 pageshow；回调严格配对；回调抛错不打断状态机；`relinquish` 三档；`destroy` 移除全部监听、之后 `start` 无效；不同 `name` 互不影响 |
 | 上层 | 每个间隔只运行一次；接手时距上次不满间隔不运行；间隔严格（差 1 毫秒）；刷新 5 次只运行 1 次；key 变了立即运行；`check()`；切回前台、聚焦、计时器同时触发只运行一次；`run` 失败或抛错不影响下个周期；`key()` 抛错不触发运行；时钟回拨；运行中存储抛错 |
 | 迁移兼容 | 用旧格式的 `:lease`、`:last` 记录启动，行为正确；不写存活记录的旧 Leader 不被抢 |
@@ -464,3 +466,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 按七个验证阶段调整发布节奏：发 `next` 之前先完成首个接入方本地联调（V4）和旧版本实测（V5）；§11 改为本模块完成时的标准，新增 AC10（交出 tgz 与迁移说明） |
 | 2026-11-13 | 实现中修订（C3 交审）：§2.3 `TabLeaderEnv` 改为只声明实际用到的最小接口，新增公开类型 `TabLeaderLockManager`；§7 新增 `src/core.ts`（两层共用的状态机） |
 | 2026-11-13 | 实现中修订（T11，范围内）：§9.2 冻结接管的模拟方式由 `Page.setWebLifecycleState` 改为 `Debugger.pause`，原因是前者在 Playwright 下对始终处于前台的页面不生效；场景与验收不变 |
+| 2026-11-13 | 缺陷修复（V5 实测发现）：新增 R8a，`request()` 还没拿到锁就被拒绝时降级而不重试，修复 Chrome 阻止所有网站数据时的微任务死循环；R8 限定为拿到锁之后的拒绝；§9.1 新增对应场景 |

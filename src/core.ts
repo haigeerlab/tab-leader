@@ -45,7 +45,7 @@ export interface Core {
   becomeLeader(): void
   /** Leadership was taken away: notify, then compete again. */
   lose(): void
-  /** Storage stopped working in lease mode: fall back to solo. */
+  /** The current mechanism is unusable: Web Locks falls back to lease (or solo without storage), lease to solo. */
   degrade(): void
 }
 
@@ -191,8 +191,13 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
       if (mode === 'solo' || state === 'destroyed' || state === 'suspended') return
       bump()
       notify(false)
-      mode = 'solo'
-      driver = soloDriver(core)
+      if (mode === 'locks' && storage) {
+        mode = 'lease'
+        driver = createLeaseDriver(core)
+      } else {
+        mode = 'solo'
+        driver = soloDriver(core)
+      }
       join()
     },
   }

@@ -46,6 +46,13 @@ interface LockEntry {
 export interface WorldOptions {
   /** Provide navigator.locks. Default true. */
   locks?: boolean
+  /**
+   * navigator.locks exists but every request() rejects at once, before any callback runs
+   * (Chrome with all site data blocked, in a secure context). After 1000 rejections it stops
+   * rejecting and never settles, so a retry loop shows up as a high `lockRequests` count
+   * instead of hanging the test run.
+   */
+  locksReject?: boolean
   /** 'ok' (default), 'none' (localStorage getter throws) or 'broken' (every call throws). */
   storage?: 'ok' | 'none' | 'broken'
   /** Provide a global document. Default true. */
@@ -56,7 +63,7 @@ export interface WorldOptions {
 export const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
 
 export function createWorld(options: WorldOptions = {}) {
-  const { locks = true, storage = 'ok', document = true } = options
+  const { locks = true, locksReject = false, storage = 'ok', document = true } = options
   let now = 1_000_000_000_000
   let seq = 0
   let tabSeq = 0
@@ -138,6 +145,13 @@ export function createWorld(options: WorldOptions = {}) {
   function createLockManager(owner: Tab): TabLeaderLockManager {
     return {
       request(name, opts, callback) {
+        world.lockRequests++
+        if (locksReject) {
+          if (world.lockRequests > 1000) return new Promise(() => {})
+          const error = new Error('The request was denied.')
+          error.name = 'SecurityError'
+          return Promise.reject(error)
+        }
         return new Promise((resolve, reject) => {
           const queue = lockQueue(name)
           const entry: LockEntry = { owner, callback, resolve, reject, stolen: false }
@@ -202,6 +216,8 @@ export function createWorld(options: WorldOptions = {}) {
 
   const world = {
     storageBroken: storage === 'broken',
+    /** Number of navigator.locks.request() calls across all tabs. */
+    lockRequests: 0,
     /** Exceptions thrown by timer tasks (what a browser would report to the console). */
     errors: [] as unknown[],
     store,

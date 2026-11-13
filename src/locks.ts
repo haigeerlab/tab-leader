@@ -21,8 +21,11 @@ export function createLocksDriver(core: Core): Driver {
 
   function request(steal: boolean): void {
     const myGen = core.gen
+    /** Whether the browser ever ran our callback, i.e. granted the lock. */
+    let granted = false
     core
       .locks!.request(core.name, steal ? { steal: true } : {}, () => {
+        granted = true
         // Paused, destroyed or switched to stealing while queued: let the lock go at once (R4).
         if (myGen !== core.gen || core.state !== 'waiting') return undefined
         return new Promise<void>((resolve) => {
@@ -37,8 +40,12 @@ export function createLocksDriver(core: Core): Driver {
       .then(
         () => {},
         () => {
+          if (myGen !== core.gen) return
+          // Rejected before ever being granted: Web Locks is unusable here (e.g. site data blocked).
+          // Retrying would reject again at once and spin in microtasks, so fall through instead (R8a).
+          if (!granted) core.degrade()
           // Stolen (AbortError, R7) or dropped by the browser (R8): lose and compete again.
-          if (myGen === core.gen) core.lose()
+          else core.lose()
         },
       )
     if (!steal) watch()
