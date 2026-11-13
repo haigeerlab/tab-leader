@@ -46,5 +46,5 @@
 
 - [x] T12 打包验证（Vite 5 + legacy + TS 5.2、Nuxt 3.11）与体积报告 — `pnpm verify:consumers`：Vite 5.4.21 + plugin-legacy 5.4.1 用 TS 5.2.2 类型检查、构建通过，legacy 产物含接入代码；Nuxt 3.11.2 构建通过，服务端渲染 200，服务端 `mode` 为 `none`、无报错。体积：tgz 14.62 KB；`dist/index.js` 15.39 KB（gzip 4.42 KB）；两层合计 minify + gzip **2.58 KB**（≤ 3 KB）。Nuxt 工程用 `npm install --before=2024-05-01` 安装：全新安装会拉到新版 nitropack 等间接依赖，连不含本库的空 Nuxt 3.11 工程都会 500，已用对照组确认与本库无关
 - [x] T13 文档定稿、迁移说明与治理文件 — 新增 `docs/guide/migration.md`（存储对照、格式不一致时的行为、新旧混开、API 差异写法）；API 参考按 `src/types.ts` 定稿并列出导出类型；场景示例 1～4 在 Chromium 两个标签页里实跑通过；两版 README 改状态行、加迁移说明和参与贡献，11 节段落一一对应（英文版文档节多一句“文档为中文”）；AGENTS.md 命令段定稿；新增 CHANGELOG、CONTRIBUTING、SECURITY、两个 Issue 模板；相对链接与锚点 0 处断链；`check:terms` 通过
-- [ ] T14 CI 配置文件（只写不推）
+- [x] T14 CI 配置文件（只写不推）— `.github/workflows/ci.yml`：Node 22、24 矩阵，checkout@v7、pnpm/action-setup@v6（读 packageManager）、setup-node@v7、失败时上传报告（upload-artifact@v7）；本机无 actionlint，用 PyYAML 解析通过，7 条 `pnpm` 命令逐条与 `package.json` 脚本核对一致，本地 `pnpm install --frozen-lockfile` 通过。未推送，推送后才生效
 - [ ] 检查点 C5（gate）：最终验收（AC1～AC10），交出 tgz，通知开始 V4 联调
