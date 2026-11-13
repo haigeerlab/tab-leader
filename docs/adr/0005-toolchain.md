@@ -65,7 +65,7 @@ vitest 自带 TS 支持和 v8 覆盖率，和 pwa-platform 一致。`node:test` 
 | Cypress | 不支持 WebKit 的多标签页场景，测不了 Safari 引擎 |
 | WebdriverIO | 能力够用，但模拟冻结页面这类 CDP 操作不如 Playwright 直接 |
 
-Playwright 一套测试就能跑 Chromium、Firefox、WebKit。在 Chromium 上，它可以通过 CDP（`Page.setWebLifecycleState`）冻结页面，冻结接管的测试必须用到这个能力。
+Playwright 一套测试就能跑 Chromium、Firefox、WebKit。在 Chromium 上，它可以通过 CDP 让页面停止运行，冻结接管的测试必须用到这个能力（实测 `Page.setWebLifecycleState` 只冻结后台页，自动化页面始终在前台，所以改用 `Debugger.pause` 暂停页面脚本来模拟冻结）。
 
 ### 代码检查：ESLint，而不是 oxlint
 

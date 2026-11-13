@@ -36,11 +36,18 @@
 
 Playwright 在 Chromium、Firefox、WebKit **当前版本**上跑多标签页场景（需求文档 §9.2）。它证明三档逻辑在三大引擎的当前版本上行为一致，**不能证明旧版本可用**。
 
+运行方式：`pnpm test:browser`（Playwright 1.65.0，本地 macOS，连续 3 次都通过）。
+
 | 引擎 | 版本 | 结果 | 日期 |
 |---|---|---|---|
-| Chromium | — | 尚未运行（0.1.0 实现后补） | — |
-| Firefox | — | 尚未运行 | — |
-| WebKit | — | 尚未运行 | — |
+| Chromium | 158.0.8127.18 | `locks`、`lease`、`solo`、上层间隔、冻结接管通过；bfcache 跳过 | 2026-11-13 |
+| Firefox | 159.0 | `locks`、`lease`、`solo`、上层间隔通过；冻结接管、bfcache 跳过 | 2026-11-13 |
+| WebKit | 27.2 | `locks`、`lease`、`solo`、上层间隔通过；冻结接管、bfcache 跳过 | 2026-11-13 |
+
+跳过的原因：
+
+- **冻结接管只在 Chromium 上测**：用 CDP `Debugger.pause` 暂停 Leader 页的脚本来模拟冻结（锁仍被持有、存活记录停止更新），恢复后检查旧 Leader 让出。`Page.setWebLifecycleState` 只冻结后台页，而自动化环境里页面始终处于前台，实测无效。Firefox、WebKit 没有对应能力。
+- **bfcache 三个引擎都跳过**：页面离开再返回时，三个引擎在自动化环境里都是重新加载，而不是从 bfcache 恢复（用例通过 `window` 上的标记判断），测试按 Q3 标记跳过。`pagehide`／`pageshow` 的处理由单元测试覆盖，真实恢复放在发版前手动实测（第 4 节）。
 
 ### 3.2 旧版本手动实测（每次发版前）
 

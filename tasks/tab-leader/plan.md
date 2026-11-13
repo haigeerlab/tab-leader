@@ -92,7 +92,7 @@
 - 文件：`demo/index.html`、`scripts/serve.mjs`、`package.json`
 
 **T11 Playwright 三引擎**（M）
-- 内容：`playwright.config.ts`（Chromium、Firefox、WebKit；`webServer` 用 `scripts/serve.mjs`）、`e2e/leader.spec.ts`（Spec §9.2 的场景）。冻结接管只在 Chromium 上用 CDP `Page.setWebLifecycleState` 做；bfcache 尽力，测不了的标记跳过并写原因（Q3）。
+- 内容：`playwright.config.ts`（Chromium、Firefox、WebKit；`webServer` 用 `scripts/serve.mjs`）、`e2e/leader.spec.ts`（Spec §9.2 的场景）。冻结接管只在 Chromium 上用 CDP 做（实现时改用 `Debugger.pause`，见 Spec 变更记录）；bfcache 尽力，测不了的标记跳过并写原因（Q3）。
 - 验收：`pnpm test:browser` 三个引擎全部通过（跳过的有说明）；同一套用例连续跑 3 次都通过（防偶发失败）。
 - 需要下载 Playwright 的浏览器（`pnpm exec playwright install chromium firefox webkit`，从 Playwright 官方源下载，约数百 MB）。
 - 文件：`playwright.config.ts`、`e2e/leader.spec.ts`、`package.json`
@@ -165,3 +165,4 @@
 |---|---|
 | 2026-11-13 | 初稿 |
 | 2026-11-13 | 按七个验证阶段调整：本计划覆盖 V1～V3；T13 新增迁移说明；C5 交出 tgz 并通知开始 V4 |
+| 2026-11-13 | T11 冻结接管改用 CDP `Debugger.pause` 模拟（同 Spec 变更记录），范围内修正 |

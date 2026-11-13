@@ -59,10 +59,12 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "check:terms": "node scripts/check-internal-terms.mjs",
-    "demo": "pnpm build && node scripts/serve.mjs"
+    "demo": "pnpm build && node scripts/serve.mjs",
+    "test:browser": "pnpm build && playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "~1.65.0",
     "@types/node": "~24.19.2",
     "@vitest/coverage-v8": "~5.1.0",
     "acorn": "~8.19.0",

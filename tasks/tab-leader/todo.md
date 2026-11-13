@@ -39,8 +39,8 @@
 ## 阶段 3：示例页与真实浏览器测试
 
 - [x] T10 示例页（含 UI 自验截图）— 内置浏览器（Chromium）自验：3 个标签页只有 1 个显示绿色「Leader」、其余「Follower」，mode 显示 locks；关掉 Leader 页后另一页立即变为 Leader 并记录 onLeader；`?strategy=lease` 时 mode 显示 lease、只有一个 Leader；interval 区块按 5 s 记录运行。默认端口用 4789（4173 在本机浏览器里被其他应用的缓存页占用）
-- [ ] T11 Playwright 三引擎（连续 3 次通过）
-- [ ] 检查点 C4（report）：结果写进兼容性文档
+- [x] T11 Playwright 三引擎（连续 3 次通过）— 18 个用例：13 通过、5 跳过（冻结接管在 Firefox、WebKit 跳过；bfcache 三引擎在自动化下都未从缓存恢复，按 Q3 跳过）；连续 3 次结果一致。冻结模拟改用 `Debugger.pause`，已记入 Spec、Plan 变更记录与 ADR-0005
+- [x] 检查点 C4（report）：结果写进兼容性文档 — `docs/compatibility.md` §3.1：Chromium 158、Firefox 159、WebKit 27.2（Playwright 1.65.0），跳过项写明原因；`pnpm test` 104 个、lint、typecheck、build 通过
 
 ## 阶段 4：交付
 

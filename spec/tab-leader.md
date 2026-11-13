@@ -392,7 +392,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | `lease` 档（`strategy: 'lease'`）：同上 | ✅ | 用强制起始档模拟旧浏览器的租约路径 |
 | `solo` 档：每页都是 Leader | ✅ | — |
 | 上层：多页时一个间隔只运行一次 | ✅ | 间隔用很短的值 |
-| 冻结接管：Leader 页被冻结后由另一页接手，解冻后旧 Leader 让出 | 仅 Chromium | 通过 CDP `Page.setWebLifecycleState` 冻结；其他引擎没有对应能力 |
+| 冻结接管：Leader 页被冻结后由另一页接手，解冻后旧 Leader 让出 | 仅 Chromium | 通过 CDP `Debugger.pause` 暂停页面脚本来模拟冻结（锁仍被持有、存活记录停止更新）；`Page.setWebLifecycleState` 只冻结后台页，而自动化环境里页面始终是前台，实测无效；其他引擎没有对应能力 |
 | bfcache：`pagehide`／`pageshow` 后行为正确 | 尽力 | 自动化环境里 bfcache 是否生效因引擎而异，不生效时测试标记跳过并说明 |
 
 这一层证明三档逻辑在三大引擎的**当前版本**上行为一致，**不能**证明旧版本可用。
@@ -463,3 +463,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 代码检查确定用 ESLint（不用 oxlint），新增 eslint-plugin-compat、browserslist 唯一来源、tsconfig `lib: ["ES2017", "DOM"]`；ADR-0005 改正「oxlint 没有类型规则」的错误描述 |
 | 2026-11-13 | 按七个验证阶段调整发布节奏：发 `next` 之前先完成首个接入方本地联调（V4）和旧版本实测（V5）；§11 改为本模块完成时的标准，新增 AC10（交出 tgz 与迁移说明） |
 | 2026-11-13 | 实现中修订（C3 交审）：§2.3 `TabLeaderEnv` 改为只声明实际用到的最小接口，新增公开类型 `TabLeaderLockManager`；§7 新增 `src/core.ts`（两层共用的状态机） |
+| 2026-11-13 | 实现中修订（T11，范围内）：§9.2 冻结接管的模拟方式由 `Page.setWebLifecycleState` 改为 `Debugger.pause`，原因是前者在 Playwright 下对始终处于前台的页面不生效；场景与验收不变 |
