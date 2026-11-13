@@ -1,0 +1,1264 @@
+{
+  "numTotalTestSuites": 20,
+  "numPassedTestSuites": 16,
+  "numFailedTestSuites": 4,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 102,
+  "numPassedTests": 96,
+  "numFailedTests": 6,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794570501903,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["migration compatibility with the record formats of a previous implementation"],
+          "fullName": "migration compatibility with the record formats of a previous implementation starts from an existing `:last` record { at, id } and honours its interval",
+          "status": "passed",
+          "title": "starts from an existing `:last` record { at, id } and honours its interval",
+          "duration": 12.434624999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["migration compatibility with the record formats of a previous implementation"],
+          "fullName": "migration compatibility with the record formats of a previous implementation an existing foreign lease { tab, gen, exp } is respected until it expires",
+          "status": "passed",
+          "title": "an existing foreign lease { tab, gen, exp } is respected until it expires",
+          "duration": 10.347582999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["migration compatibility with the record formats of a previous implementation"],
+          "fullName": "migration compatibility with the record formats of a previous implementation a legacy Web Locks leader (no alive record) is never stolen from",
+          "status": "passed",
+          "title": "a legacy Web Locks leader (no alive record) is never stolen from",
+          "duration": 40.50050000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["migration compatibility with the record formats of a previous implementation"],
+          "fullName": "migration compatibility with the record formats of a previous implementation writes `:last` in the same { at, id } format",
+          "status": "passed",
+          "title": "writes `:last` in the same { at, id } format",
+          "duration": 3.040333000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502043,
+      "endTime": 1794570502109.0403,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/compat.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases browserEnv reads the real globals lazily",
+          "status": "passed",
+          "title": "browserEnv reads the real globals lazily",
+          "duration": 1.8836670000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases a hidden visibilitychange does not count as coming to the foreground",
+          "status": "passed",
+          "title": "a hidden visibilitychange does not count as coming to the foreground",
+          "duration": 5.952333999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases works without a document",
+          "status": "passed",
+          "title": "works without a document",
+          "duration": 2.7872500000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases callbacks are optional",
+          "status": "passed",
+          "title": "callbacks are optional",
+          "duration": 2.611875000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases events while suspended are ignored; destroy while suspended is clean",
+          "status": "passed",
+          "title": "events while suspended are ignored; destroy while suspended is clean",
+          "duration": 2.6770839999999794,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases destroy inside onLeader stops before the alive record is written",
+          "status": "passed",
+          "title": "destroy inside onLeader stops before the alive record is written",
+          "duration": 2.4481250000000045,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases stall check survives a throwing storage",
+          "status": "passed",
+          "title": "stall check survives a throwing storage",
+          "duration": 31.64616699999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases lease: writing the lease fails while reading works -> degrade to solo",
+          "status": "passed",
+          "title": "lease: writing the lease fails while reading works -> degrade to solo",
+          "duration": 3.065832999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases lease: renewal write fails -> degrade to solo",
+          "status": "passed",
+          "title": "lease: renewal write fails -> degrade to solo",
+          "duration": 7.976791999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases lease: storage fails inside the confirm window -> degrade",
+          "status": "passed",
+          "title": "lease: storage fails inside the confirm window -> degrade",
+          "duration": 4.080833000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases lease: another tab overwrites inside the confirm window -> not elected; repeated events are ignored",
+          "status": "passed",
+          "title": "lease: another tab overwrites inside the confirm window -> not elected; repeated events are ignored",
+          "duration": 4.129041000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases lease: pagehide inside the confirm window drops the pending confirmation",
+          "status": "passed",
+          "title": "lease: pagehide inside the confirm window drops the pending confirmation",
+          "duration": 2.7904159999999933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases interval: a throwing key with no previous record runs once with an empty identity",
+          "status": "passed",
+          "title": "interval: a throwing key with no previous record runs once with an empty identity",
+          "duration": 3.6595000000000084,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["edge cases"],
+          "fullName": "edge cases interval: check() on a follower does nothing",
+          "status": "passed",
+          "title": "interval: check() on a follower does nothing",
+          "duration": 2.8916250000000048,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502045,
+      "endTime": 1794570502123.8916,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/edges.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["env"],
+          "fullName": "env browserEnv returns null outside a browser",
+          "status": "passed",
+          "title": "browserEnv returns null outside a browser",
+          "duration": 0.6866659999999953,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["env"],
+          "fullName": "env lockManager detects Web Locks",
+          "status": "passed",
+          "title": "lockManager detects Web Locks",
+          "duration": 0.3463750000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["env"],
+          "fullName": "env usableStorage requires write, read back and remove to succeed",
+          "status": "passed",
+          "title": "usableStorage requires write, read back and remove to succeed",
+          "duration": 0.257000000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["env"],
+          "fullName": "env readJson distinguishes failure, missing and corrupt values",
+          "status": "passed",
+          "title": "readJson distinguishes failure, missing and corrupt values",
+          "duration": 0.4312919999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["env"],
+          "fullName": "env createTabId is unique without crypto",
+          "status": "passed",
+          "title": "createTabId is unique without crypto",
+          "duration": 0.12299999999999756,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502185,
+      "endTime": 1794570502187.123,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/env.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval five tabs: one run per interval",
+          "status": "passed",
+          "title": "five tabs: one run per interval",
+          "duration": 204.47279199999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval new leader after close waits until the interval since the last run has passed",
+          "status": "passed",
+          "title": "new leader after close waits until the interval since the last run has passed",
+          "duration": 27.220208000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval strict interval: not at interval - 1 ms, yes at interval",
+          "status": "passed",
+          "title": "strict interval: not at interval - 1 ms, yes at interval",
+          "duration": 11.741041999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval five reloads within the interval: one run",
+          "status": "passed",
+          "title": "five reloads within the interval: one run",
+          "duration": 10.864040999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval identity change: run at once and restart the interval",
+          "status": "passed",
+          "title": "identity change: run at once and restart the interval",
+          "duration": 16.126958000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval identity change in another tab is picked up by the leader on its next tick",
+          "status": "passed",
+          "title": "identity change in another tab is picked up by the leader on its next tick",
+          "duration": 6.685958000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval visibilitychange, focus and a timer firing together: one run",
+          "status": "passed",
+          "title": "visibilitychange, focus and a timer firing together: one run",
+          "duration": 11.920041999999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval different names are independent",
+          "status": "passed",
+          "title": "different names are independent",
+          "duration": 15.889291999999955,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval run rejects: no retry, next cycle runs normally",
+          "status": "passed",
+          "title": "run rejects: no retry, next cycle runs normally",
+          "duration": 13.895500000000027,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval run throws synchronously: next cycle runs normally",
+          "status": "passed",
+          "title": "run throws synchronously: next cycle runs normally",
+          "duration": 14.576333000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval key() throwing keeps the previous identity and does not trigger a run",
+          "status": "passed",
+          "title": "key() throwing keeps the previous identity and does not trigger a run",
+          "duration": 5.433625000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval clock moved back: no early run; interval restarts from the new time",
+          "status": "passed",
+          "title": "clock moved back: no early run; interval restarts from the new time",
+          "duration": 15.564750000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval Web Locks without localStorage: still one tab runs",
+          "status": "passed",
+          "title": "Web Locks without localStorage: still one tab runs",
+          "duration": 33.552459,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval neither Web Locks nor localStorage: every tab runs on its own interval",
+          "status": "passed",
+          "title": "neither Web Locks nor localStorage: every tab runs on its own interval",
+          "duration": 5.396749999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval storage starts throwing at runtime: no interruption and no early run",
+          "status": "passed",
+          "title": "storage starts throwing at runtime: no interruption and no early run",
+          "duration": 23.935915999999906,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval corrupt record falls back to the in-memory record",
+          "status": "passed",
+          "title": "corrupt record falls back to the in-memory record",
+          "duration": 5.387333000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval lease mode: one run per interval across three tabs",
+          "status": "passed",
+          "title": "lease mode: one run per interval across three tabs",
+          "duration": 130.90541599999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval lease mode: an old leader resumed from a long pause does not run",
+          "status": "passed",
+          "title": "lease mode: an old leader resumed from a long pause does not run",
+          "duration": 28.050292000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval lease mode: storage failure degrades to solo and keeps running",
+          "status": "passed",
+          "title": "lease mode: storage failure degrades to solo and keeps running",
+          "duration": 13.109124999999949,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval Web Locks: frozen leader taken over, intervals stay >= interval",
+          "status": "failed",
+          "title": "Web Locks: frozen leader taken over, intervals stay >= interval",
+          "duration": 68.74566600000003,
+          "failureMessages": [
+            "AssertionError: expected 1 to be 2 // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/interval.test.ts:248:54\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval bfcache: pagehide stops, pageshow resumes with a single timer",
+          "status": "passed",
+          "title": "bfcache: pagehide stops, pageshow resumes with a single timer",
+          "duration": 28.50166700000011,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval destroy stops running",
+          "status": "passed",
+          "title": "destroy stops running",
+          "duration": 6.518792000000076,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["createTabInterval"],
+          "fullName": "createTabInterval without a key every run uses the same identity",
+          "status": "passed",
+          "title": "without a key every run uses the same identity",
+          "duration": 10.25970899999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502044,
+      "endTime": 1794570502752.2598,
+      "status": "failed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/interval.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode three tabs opened at once: exactly one leader",
+          "status": "passed",
+          "title": "three tabs opened at once: exactly one leader",
+          "duration": 5.9269999999999925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode only one leader across many renewals",
+          "status": "passed",
+          "title": "only one leader across many renewals",
+          "duration": 132.134167,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode leader closes: lease removed, another tab takes over at once via the storage event",
+          "status": "passed",
+          "title": "leader closes: lease removed, another tab takes over at once via the storage event",
+          "duration": 7.905083999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode leader paused beyond the lease TTL: taken over after expiry",
+          "status": "passed",
+          "title": "leader paused beyond the lease TTL: taken over after expiry",
+          "duration": 12.722249999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode resumed old leader finds the lease is not its own and steps down",
+          "status": "passed",
+          "title": "resumed old leader finds the lease is not its own and steps down",
+          "duration": 16.838041000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode a crashed leader (no pagehide) is replaced after its lease expires",
+          "status": "passed",
+          "title": "a crashed leader (no pagehide) is replaced after its lease expires",
+          "duration": 12.712416000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode pagehide removes the own lease",
+          "status": "passed",
+          "title": "pagehide removes the own lease",
+          "duration": 3.8087919999999826,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode storage fails at runtime: degrade to solo, onFollower then onLeader (R11)",
+          "status": "passed",
+          "title": "storage fails at runtime: degrade to solo, onFollower then onLeader (R11)",
+          "duration": 10.212041999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode another tab overwriting the lease makes the leader step down on the storage event",
+          "status": "passed",
+          "title": "another tab overwriting the lease makes the leader step down on the storage event",
+          "duration": 3.811374999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode relinquish waits one renew interval before competing again (R12)",
+          "status": "passed",
+          "title": "relinquish waits one renew interval before competing again (R12)",
+          "duration": 7.675292000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode relinquish when alone: leads again after the renew interval",
+          "status": "passed",
+          "title": "relinquish when alone: leads again after the renew interval",
+          "duration": 11.552458000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode strategy 'lease' uses the lease even when Web Locks exist",
+          "status": "passed",
+          "title": "strategy 'lease' uses the lease even when Web Locks exist",
+          "duration": 3.9950829999999655,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode capability matrix picks the expected mode",
+          "status": "passed",
+          "title": "capability matrix picks the expected mode",
+          "duration": 0.4186669999999708,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode foreground check: a leader whose lease was taken steps down",
+          "status": "passed",
+          "title": "foreground check: a leader whose lease was taken steps down",
+          "duration": 3.975917000000038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["lease mode"],
+          "fullName": "lease mode destroy removes the own lease",
+          "status": "passed",
+          "title": "destroy removes the own lease",
+          "duration": 7.007957999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502044,
+      "endTime": 1794570502284.008,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/leader.lease.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode five tabs: exactly one leader",
+          "status": "passed",
+          "title": "five tabs: exactly one leader",
+          "duration": 6.036541,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode leader closes: the next tab takes over immediately",
+          "status": "passed",
+          "title": "leader closes: the next tab takes over immediately",
+          "duration": 5.696540999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode leader crashes without pagehide: the browser frees the lock and another tab leads",
+          "status": "passed",
+          "title": "leader crashes without pagehide: the browser frees the lock and another tab leads",
+          "duration": 5.324083000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode a tab paused while queued releases the lock as soon as it gets it (R4)",
+          "status": "passed",
+          "title": "a tab paused while queued releases the lock as soon as it gets it (R4)",
+          "duration": 5.301333,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode pagehide releases the lock; pageshow(persisted) queues again",
+          "status": "passed",
+          "title": "pagehide releases the lock; pageshow(persisted) queues again",
+          "duration": 10.061333999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode stolen leader is notified and queues again (R7)",
+          "status": "passed",
+          "title": "stolen leader is notified and queues again (R7)",
+          "duration": 5.340292000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode relinquish moves to the back of the queue (R12)",
+          "status": "passed",
+          "title": "relinquish moves to the back of the queue (R12)",
+          "duration": 10.294542000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode relinquish when alone: becomes leader again",
+          "status": "passed",
+          "title": "relinquish when alone: becomes leader again",
+          "duration": 5.068749999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode different names do not interfere",
+          "status": "passed",
+          "title": "different names do not interfere",
+          "duration": 2.608000000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode destroy releases the lock to the next tab",
+          "status": "passed",
+          "title": "destroy releases the lock to the next tab",
+          "duration": 5.001499999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode"],
+          "fullName": "Web Locks mode other request rejections are treated as losing leadership (R8)",
+          "status": "passed",
+          "title": "other request rejections are treated as losing leadership (R8)",
+          "duration": 5.036582999999979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502043,
+      "endTime": 1794570502109.0366,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/leader.locks.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle without Web Locks and localStorage every tab is a leader",
+          "status": "passed",
+          "title": "without Web Locks and localStorage every tab is a leader",
+          "duration": 4.219749999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle strategy 'solo' skips available mechanisms",
+          "status": "passed",
+          "title": "strategy 'solo' skips available mechanisms",
+          "duration": 2.7703750000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle mode is none before start; creating touches no browser API",
+          "status": "passed",
+          "title": "mode is none before start; creating touches no browser API",
+          "duration": 0.14779199999999548,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle outside a browser start() is inert (R3)",
+          "status": "passed",
+          "title": "outside a browser start() is inert (R3)",
+          "duration": 0.15458300000000236,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle start twice has no extra effect",
+          "status": "passed",
+          "title": "start twice has no extra effect",
+          "duration": 2.7288330000000087,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle pagehide suspends and notifies; pageshow(persisted) rejoins; repeated pageshow does not restart",
+          "status": "passed",
+          "title": "pagehide suspends and notifies; pageshow(persisted) rejoins; repeated pageshow does not restart",
+          "duration": 5.473332999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle a normal-load pageshow (persisted false) does not restart",
+          "status": "passed",
+          "title": "a normal-load pageshow (persisted false) does not restart",
+          "duration": 2.680250000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle destroy notifies, removes every listener, and start afterwards does nothing",
+          "status": "passed",
+          "title": "destroy notifies, removes every listener, and start afterwards does nothing",
+          "duration": 5.5685840000000155,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle destroy before start is allowed and start afterwards does nothing",
+          "status": "passed",
+          "title": "destroy before start is allowed and start afterwards does nothing",
+          "duration": 2.7032920000000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle callback errors are reported asynchronously and do not break the state machine (R15)",
+          "status": "passed",
+          "title": "callback errors are reported asynchronously and do not break the state machine (R15)",
+          "duration": 5.277417000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["solo mode and lifecycle"],
+          "fullName": "solo mode and lifecycle relinquish has no effect in solo mode or when not leader",
+          "status": "passed",
+          "title": "relinquish has no effect in solo mode or when not leader",
+          "duration": 2.7079579999999908,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502044,
+      "endTime": 1794570502078.708,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/leader.solo.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover the leader writes an alive record when elected and every aliveInterval",
+          "status": "passed",
+          "title": "the leader writes an alive record when elected and every aliveInterval",
+          "duration": 9.271625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover frozen leader (no pagehide, lock kept) is taken over after stallTimeout (R6)",
+          "status": "failed",
+          "title": "frozen leader (no pagehide, lock kept) is taken over after stallTimeout (R6)",
+          "duration": 16.863916000000017,
+          "failureMessages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts:27:31\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover a short pause within stallTimeout does not trigger a takeover",
+          "status": "passed",
+          "title": "a short pause within stallTimeout does not trigger a takeover",
+          "duration": 38.01958400000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover unfrozen old leader yields on its first alive check, before AbortError arrives (R5)",
+          "status": "failed",
+          "title": "unfrozen old leader yields on its first alive check, before AbortError arrives (R5)",
+          "duration": 12.177834000000018,
+          "failureMessages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts:50:31\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover unfrozen old leader also yields via AbortError and queues again (R7)",
+          "status": "failed",
+          "title": "unfrozen old leader also yields via AbortError and queues again (R7)",
+          "duration": 18.207042,
+          "failureMessages": [
+            "AssertionError: expected true to be false // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts:68:31\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover no alive record (e.g. an older implementation is leading): never steal",
+          "status": "passed",
+          "title": "no alive record (e.g. an older implementation is leading): never steal",
+          "duration": 42.658540999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover corrupt or future-dated alive records never count as a stall",
+          "status": "passed",
+          "title": "corrupt or future-dated alive records never count as a stall",
+          "duration": 30.726291999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover coming to the foreground checks for a stall immediately",
+          "status": "failed",
+          "title": "coming to the foreground checks for a stall immediately",
+          "duration": 7.948959000000002,
+          "failureMessages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts:107:31\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover without localStorage there is no stall takeover (known limitation)",
+          "status": "passed",
+          "title": "without localStorage there is no stall takeover (known limitation)",
+          "duration": 43.248625000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["Web Locks mode: alive record and stall takeover"],
+          "fullName": "Web Locks mode: alive record and stall takeover stallTimeout and aliveInterval are configurable",
+          "status": "failed",
+          "title": "stallTimeout and aliveInterval are configurable",
+          "duration": 11.374290999999971,
+          "failureMessages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts:127:31\n    at async file:///Users/vilin/Documents/haigeerlab/tab-leader/node_modules/.pnpm/vitest@5.1.0_@types+node@24.19.2_@vitest+coverage-v8@5.1.0_vite@8.3.8_@types+node@24.19.2_/node_modules/vitest/dist/chunks/run.CjdgFZiW.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502042,
+      "endTime": 1794570502272.3743,
+      "status": "failed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/leader.stall.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "exports only the two factory functions",
+          "status": "passed",
+          "title": "exports only the two factory functions",
+          "duration": 0.8714580000000041,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502199,
+      "endTime": 1794570502199.8713,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/smoke.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "importing the package has no side effects and needs no browser globals",
+          "status": "passed",
+          "title": "importing the package has no side effects and needs no browser globals",
+          "duration": 4.606749999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502187,
+      "endTime": 1794570502191.6067,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/ssr.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world locks queue per name and are released when the callback settles",
+          "status": "passed",
+          "title": "locks queue per name and are released when the callback settles",
+          "duration": 4.788874999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world steal rejects the previous holder with AbortError",
+          "status": "passed",
+          "title": "steal rejects the previous holder with AbortError",
+          "duration": 4.0020000000000024,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world a frozen tab receives queued tasks only after unfreezing",
+          "status": "passed",
+          "title": "a frozen tab receives queued tasks only after unfreezing",
+          "duration": 6.221416999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world storage events go to other tabs only",
+          "status": "passed",
+          "title": "storage events go to other tabs only",
+          "duration": 0.2074169999999924,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world closing a tab drops its lock so the next request gets it",
+          "status": "passed",
+          "title": "closing a tab drops its lock so the next request gets it",
+          "duration": 2.854416999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world jumpClock moves the wall clock but timers fire after real elapsed time",
+          "status": "passed",
+          "title": "jumpClock moves the wall clock but timers fire after real elapsed time",
+          "duration": 3.925457999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fake world"],
+          "fullName": "fake world storage modes",
+          "status": "passed",
+          "title": "storage modes",
+          "duration": 0.4876249999999942,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1794570502151,
+      "endTime": 1794570502174.4875,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/vilin/Documents/haigeerlab/tab-leader/test/world.test.ts"
+    }
+  ]
+}

@@ -5,7 +5,8 @@
 //
 // Usage: node scripts/check-internal-terms.mjs [--history]
 // Term list: $TAB_LEADER_INTERNAL_TERMS or ~/.config/tab-leader/internal-terms.txt
-//   one case-insensitive regular expression per line, `#` starts a comment.
+//   one case-insensitive regular expression per line, `#` starts a comment;
+//   prefix a line with `cs:` to make that expression case-sensitive.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -23,7 +24,7 @@ const patterns = readFileSync(listPath, 'utf8')
   .split('\n')
   .map((line) => line.trim())
   .filter((line) => line && !line.startsWith('#'))
-  .map((source) => new RegExp(source, 'i'))
+  .map((line) => (line.startsWith('cs:') ? new RegExp(line.slice(3)) : new RegExp(line, 'i')))
 
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 28 })
 const hits = []

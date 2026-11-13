@@ -56,10 +56,9 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "check:terms": "node scripts/check-internal-terms.mjs",
-    "test:coverage": "vitest run --coverage"
+    "check:terms": "node scripts/check-internal-terms.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

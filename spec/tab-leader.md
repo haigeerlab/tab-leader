@@ -122,16 +122,30 @@ export function createTabInterval(options: TabIntervalOptions): TabInterval
 ### 2.3 运行环境（单测注入用）
 
 ```ts
+/** 库只用到 Web Locks 的这一个方法 */
+export interface TabLeaderLockManager {
+  request(name: string, options: { steal?: boolean }, callback: (lock: unknown) => unknown): Promise<unknown>
+}
+
 export interface TabLeaderEnv {
-  window: Pick<Window, 'addEventListener' | 'removeEventListener'>
-  document?: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'> | null
-  navigator?: { locks?: LockManager } | null
-  localStorage?: Storage | null
+  window: {
+    addEventListener(type: string, listener: (event: any) => void): void
+    removeEventListener(type: string, listener: (event: any) => void): void
+  }
+  document?: {
+    addEventListener(type: string, listener: (event: any) => void): void
+    removeEventListener(type: string, listener: (event: any) => void): void
+    readonly visibilityState?: string
+  } | null
+  navigator?: { locks?: TabLeaderLockManager | null } | null
+  localStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null
   now(): number
   setTimeout(fn: () => void, ms: number): unknown
   clearTimeout(id: unknown): void
 }
 ```
+
+类型只声明库实际用到的最小接口，而不是 `Window`、`LockManager` 等完整 DOM 类型：这样单测的假环境、以及接入方的 TS 版本差异都不会影响类型兼容。`TabLeaderLockManager` 随之成为公开类型。
 
 `env` 写进公开类型，但文档只说明它用于测试，不承诺单测以外的用途。
 
@@ -292,7 +306,8 @@ pnpm check:terms         # 扫描文件和 git 历史里的内部敏感词（词
 ```
 src/
   index.ts          公共导出（只有函数和类型）
-  leader.ts         createTabLeader：状态机、代次、生命周期
+  core.ts           状态机、代次、生命周期、按 strategy 选档（两层共用）
+  leader.ts         createTabLeader：core 的公开外壳
   locks.ts          Web Locks 档（存活记录、停摆接管）
   lease.ts          租约档
   interval.ts       createTabInterval
@@ -447,3 +462,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 补充工具链选型（ADR-0005）：TypeScript 由 7.0 改为 6.0，新增 ESLint、Prettier 与 `pnpm lint`，Node 下限改为 22.18，Q1 随之改写 |
 | 2026-11-13 | 代码检查确定用 ESLint（不用 oxlint），新增 eslint-plugin-compat、browserslist 唯一来源、tsconfig `lib: ["ES2017", "DOM"]`；ADR-0005 改正「oxlint 没有类型规则」的错误描述 |
 | 2026-11-13 | 按七个验证阶段调整发布节奏：发 `next` 之前先完成首个接入方本地联调（V4）和旧版本实测（V5）；§11 改为本模块完成时的标准，新增 AC10（交出 tgz 与迁移说明） |
+| 2026-11-13 | 实现中修订（C3 交审）：§2.3 `TabLeaderEnv` 改为只声明实际用到的最小接口，新增公开类型 `TabLeaderLockManager`；§7 新增 `src/core.ts`（两层共用的状态机） |
