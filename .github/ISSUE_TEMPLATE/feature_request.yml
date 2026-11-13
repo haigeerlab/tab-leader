@@ -1,0 +1,24 @@
+name: 功能建议 / Feature request
+description: 建议新的能力或改进 / Suggest a new capability or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本库刻意保持很小（例如 0.x 不做标签页之间的消息分发）。提建议前可以先看 README 里「为什么不用现有的库」一节。
+        The library is deliberately small (for example, no cross-tab messaging in 0.x). See "Why not an existing library" in the README first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你要解决的问题 / The problem
+      description: 什么场景下，现在的 API 做不到或很别扭 / What you are trying to do and why the current API falls short
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你设想的做法 / Proposed solution
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 现在的变通办法 / Current workaround

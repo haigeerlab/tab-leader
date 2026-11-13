@@ -2,7 +2,7 @@
 
 [English](README.en.md) | 中文
 
-> **状态：开发中，尚未发布到 npm。** 下面的 API 是已经设计好的版本，0.1.0 实现完成后可能有小的调整，以届时的类型定义为准。
+> **状态：0.1.0 已实现，尚未发布到 npm。** 发布前还要完成首个接入方的联调和旧版本浏览器实测，见[发布策略](docs/release.md#验证阶段)。
 
 同一浏览器里，同一个网站开了多个标签页时，**某件事只让一个标签页去做**；这个标签页关闭、崩溃、进入前进／后退缓存或被浏览器冻结后，**由另一个标签页自动接手**。没有 Web Locks 的旧浏览器逐层降级。
 
@@ -130,11 +130,16 @@ Web Locks（locks）──不支持──▶ localStorage 租约（lease）─�
 |---|---|
 | [API 参考](docs/guide/api.md) | 每个函数、参数、默认值 |
 | [场景示例](docs/guide/recipes.md) | 定时上报、轮询、WebSocket、令牌刷新 |
+| [迁移说明](docs/guide/migration.md) | 从自研实现迁移：沿用旧的名字和存储格式、新旧实现混开 |
 | [架构](docs/architecture/overview.md) | 分层、降级链、状态机、冻结接管、设计来源 |
 | [选型调研](docs/research/selection.md) | 与 11 个现有方案的多维度对比 |
 | [兼容性](docs/compatibility.md) | 浏览器范围与实测证据 |
 | [发布策略](docs/release.md) | 版本号、`next`／`latest` 标签 |
 | [架构决策](docs/adr/) | 关键决定及其理由 |
+
+## 参与贡献
+
+欢迎提 Issue 和 PR，开始前请读[贡献指南](CONTRIBUTING.md)。安全问题请按[安全策略](SECURITY.md)私下报告，不要开公开 Issue。
 
 ## 许可证
 

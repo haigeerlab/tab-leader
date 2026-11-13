@@ -29,11 +29,12 @@ pnpm test            # 单测（vitest）
 pnpm test:browser    # 真实浏览器（Playwright：Chromium、Firefox、WebKit）
 pnpm typecheck
 pnpm build           # 构建 + 产物语法与体积检查
-pnpm demo            # 示例页
+pnpm demo            # 构建后打开示例页 http://127.0.0.1:4789/demo/
+pnpm verify:consumers  # 打包后在临时的 Vite 5 + legacy、Nuxt 3.11 工程里验证，并报告体积（需联网）
 pnpm check:terms     # 内部敏感词扫描（加 --history 扫全部历史）
 ```
 
-（0.1.0 实现前这些脚本还不存在，以 `package.json` 为准。）
+首次跑 `pnpm test:browser` 前要下载浏览器：`pnpm exec playwright install chromium firefox webkit`。
 
 ## 文档事实源
 

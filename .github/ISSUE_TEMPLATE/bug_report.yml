@@ -1,0 +1,53 @@
+name: Bug 报告 / Bug report
+description: 行为和文档不一致，或者出现了报错 / Something does not behave as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先确认用的是最新版本。中文或英文都可以。安全问题请不要在这里提，见 SECURITY.md。
+        Please check you are on the latest version. Chinese or English is fine. Do not report security issues here; see SECURITY.md.
+  - type: input
+    id: version
+    attributes:
+      label: tab-leader 版本 / Version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: 浏览器和版本 / Browser and version
+      placeholder: Safari 14.1 (macOS 11), Chrome 120 ...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: leader.mode 的值 / Value of leader.mode
+      options:
+        - locks
+        - lease
+        - solo
+        - none
+        - 不确定 / Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 / Steps to reproduce
+      description: 最小可复现代码、开了几个标签页、做了什么操作 / Minimal code, how many tabs, what you did
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望和实际 / Expected vs actual
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: 其他信息 / Anything else
+      description: 控制台报错、是否 HTTPS、页面是否在 iframe 里等 / Console errors, HTTPS or not, iframe or not

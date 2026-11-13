@@ -1,13 +1,21 @@
 # API 参考
 
-> 状态：**草案**（0.1.0 实现前）。实现完成后以 `src/types.ts` 的类型定义为准定稿；本文与类型定义不一致时以类型定义为准，并修正本文。
+> 对应版本：0.1.0。本文按 `src/types.ts` 的类型定义写成，两者不一致时以类型定义为准，并修正本文。
 > 行为细节的唯一事实源是需求文档 [spec/tab-leader.md](../../spec/tab-leader.md)。
 
 ```ts
 import { createTabLeader, createTabInterval } from 'tab-leader'
 ```
 
-包只导出这两个函数和它们的类型，没有默认导出，import 时没有任何副作用。
+包只导出这两个函数和下面这些类型，没有默认导出，import 时没有任何副作用：
+
+```ts
+import type {
+  TabLeader, TabLeaderOptions, TabLeaderStrategy, TabLeaderMode,
+  TabInterval, TabIntervalOptions,
+  TabLeaderEnv, TabLeaderLockManager, // 仅测试注入环境时用到
+} from 'tab-leader'
+```
 
 ---
 
@@ -77,7 +85,7 @@ task.check()
 |---|---|---|
 | `interval` | `number`（毫秒） | 两次运行的最小间隔，严格判断，差 1 毫秒也不运行 |
 | `run` | `() => unknown` | 要做的事。返回值被忽略；同步抛错和 Promise 拒绝都被吞掉，不重试 |
-| `key` | `() => string` | 可选。运行上下文的标识，和上次运行时不同就立即运行。抛错时沿用上次的值 |
+| `key` | `() => string` | 可选。运行上下文的标识，和上次运行时不同就立即运行。抛错时沿用上次的值，不会因此触发运行 |
 
 ### 返回值 `TabInterval`
 
@@ -102,7 +110,7 @@ task.check()
 | `my-app:report:last` | `createTabInterval` 的上次运行记录 |
 | `my-app:report:probe` | 启动时检测 localStorage 是否可用，用完即删 |
 
-这些 key 和记录格式是兼容性承诺的一部分，见 [ADR-0003](../adr/0003-name-as-key-and-record-compat.md)。
+这些 key 和记录格式是兼容性承诺的一部分，见 [ADR-0003](../adr/0003-name-as-key-and-record-compat.md)；记录的具体格式和从自研实现迁移的做法见[迁移说明](migration.md)。
 
 ## 保证程度
 

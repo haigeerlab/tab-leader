@@ -2,7 +2,7 @@
 
 English | [中文](README.md)
 
-> **Status: in development, not yet published to npm.** The API below is the designed version; it may change slightly when 0.1.0 is implemented. The type definitions will be the source of truth.
+> **Status: 0.1.0 is implemented but not yet published to npm.** Before publishing, it still has to pass integration in its first consumer and manual testing on old browsers; see the [release policy](docs/release.md#验证阶段) (in Chinese).
 
 When a site is open in several tabs of the same browser, **let exactly one tab do a given job**; when that tab is closed, crashes, enters the back/forward cache or is frozen by the browser, **another tab takes over automatically**. Older browsers without Web Locks fall back step by step.
 
@@ -132,11 +132,16 @@ The documents below are written in Chinese.
 |---|---|
 | [API reference](docs/guide/api.md) | Every function, option and default |
 | [Recipes](docs/guide/recipes.md) | Presence reporting, polling, WebSocket, token refresh |
+| [Migration guide](docs/guide/migration.md) | Moving from a home-grown implementation: reusing names and storage formats, old and new code side by side |
 | [Architecture](docs/architecture/overview.md) | Layers, fallback chain, state machine, freeze takeover, design sources |
 | [Selection research](docs/research/selection.md) | Multi-dimensional comparison with 11 existing options |
 | [Compatibility](docs/compatibility.md) | Supported browsers and test evidence |
 | [Release policy](docs/release.md) | Versioning, `next` / `latest` tags |
 | [Decision records](docs/adr/) | Key decisions and their reasons |
+
+## Contributing
+
+Issues and pull requests are welcome; please read the [contributing guide](CONTRIBUTING.md) first (in Chinese, English is fine in issues and PRs). Report security problems privately as described in the [security policy](SECURITY.md), not in a public issue.
 
 ## License
 

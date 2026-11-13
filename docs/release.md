@@ -46,7 +46,7 @@
 
 1. 从干净的克隆、`main` 分支最新提交开始，`git status` 为空。
 2. `npm whoami` 确认账号；`npm view tab-leader versions` 确认目标版本不存在。
-3. 确认 V1～V5 都有记录（兼容性文档、实现计划的 todo）；`pnpm install --frozen-lockfile`、`pnpm lint`、`pnpm test`、`pnpm test:browser`、`pnpm build`、`pnpm check:terms --history`。
+3. 确认 V1～V5 都有记录（兼容性文档、实现计划的 todo）；`pnpm install --frozen-lockfile`、`pnpm lint`、`pnpm test`、`pnpm test:browser`、`pnpm build`、`pnpm verify:consumers`、`pnpm check:terms --history`。
 4. 更新 CHANGELOG、版本号，提交并打 tag `v<版本>`。
 5. `pnpm publish --access public --tag next`。
 6. 到 registry 读回：`npm view tab-leader@<版本>`，确认 `dist-tags`、文件列表、`dependencies` 为空。
