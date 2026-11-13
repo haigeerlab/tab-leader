@@ -19,6 +19,14 @@ for (const file of files.filter((f) => /\.(c?js)$/.test(f))) {
   }
 }
 
+// The library runs in browsers; a Node `engines` field would only block consumers' installs
+// (e.g. with engine-strict). The development Node version lives in .nvmrc instead.
+const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+if (pkg.engines) {
+  failed = true
+  console.error('[check-dist] package.json must not declare "engines"; put the dev Node version in .nvmrc')
+}
+
 for (const required of ['index.js', 'index.cjs', 'index.d.ts', 'index.d.cts']) {
   if (!files.includes(required)) {
     failed = true

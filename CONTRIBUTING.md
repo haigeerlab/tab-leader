@@ -10,7 +10,7 @@
 
 ## 本地开发
 
-需要 Node 22.18 或更高版本，以及 pnpm（版本见 `package.json` 的 `packageManager`）。
+需要 Node 22.18 或更高版本（见 `.nvmrc`），以及 pnpm（版本见 `package.json` 的 `packageManager`）。这只是开发和构建的要求，发布的包不声明 `engines`，不限制接入方的 Node 版本。
 
 ```bash
 pnpm install
