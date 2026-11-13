@@ -2,7 +2,7 @@
 
 English | [中文](README.md)
 
-> **Status: 0.1.0 is implemented but not yet published to npm.** Before publishing, it still has to pass integration in its first consumer and manual testing on old browsers; see the [release policy](docs/release.md#验证阶段) (in Chinese).
+> **Status: 0.1.0 preview (npm `next` tag), not yet production-ready.** It will be marked production-ready after its first consumer's staging tests and two weeks in production; a few old versions such as iOS 12.4 are not tested yet. See [compatibility](docs/compatibility.md) and the [release policy](docs/release.md#验证阶段) (in Chinese).
 
 When a site is open in several tabs of the same browser, **let exactly one tab do a given job**; when that tab is closed, crashes, enters the back/forward cache or is frozen by the browser, **another tab takes over automatically**. Older browsers without Web Locks fall back step by step.
 
@@ -24,7 +24,7 @@ When a site is open in several tabs of the same browser, **let exactly one tab d
 ## Install
 
 ```bash
-npm install tab-leader
+npm install tab-leader@next
 ```
 
 ## Quick start

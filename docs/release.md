@@ -53,3 +53,9 @@
 7. 满足 `latest` 条件后：`npm dist-tag add tab-leader@<版本> latest`，再读回确认。
 
 推送、发布、打 `latest` 每一步都需要所有者明确同意。
+
+## 发布记录
+
+| 版本 | 标签 | 日期 | 说明 |
+|---|---|---|---|
+| 0.1.0 | `next` | 2026-11-14 | V1～V4 通过。V5 部分完成：Chrome 80（`locks`、`lease`）、Firefox 74 全部通过，Safari 13.1 第 1～8 步通过；**iOS 12.4 未测，Safari 13.1 第 9、10 步未测**，经仓库所有者决定按现状发布。打 `latest` 之前必须补齐这几项（见[兼容性文档](compatibility.md) 3.2 节） |
