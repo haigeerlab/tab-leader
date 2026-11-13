@@ -248,6 +248,7 @@ export interface TabLeaderEnv {
 - 产物语法为 ES2017：不出现 `?.`、`??`、对象展开／剩余、class 字段、可选 catch 绑定等更新的语法；上述浏览器都不需要 polyfill，接入方也不需要转译。
 - 运行时只用：`localStorage`、`navigator.locks`（可选）、`addEventListener`、`setTimeout`、`Promise`、`JSON`、`Date.now`、`Math.random`。不用 `crypto`、`BroadcastChannel`、`AbortController`。
 - 服务端 import 安全：模块顶层只有函数和常量定义，不读 `window`，不读写存储。
+- **兼容范围的唯一来源**是 `package.json` 的 browserslist：`chrome >= 80, edge >= 80, firefox >= 74, safari >= 13.1, ios_saf >= 12.4`。三道自动检查各管一类（详见 ADR-0005）：新语法由构建降级加 acorn 产物检查拦截；新的 JS 内置 API 由 tsconfig `lib: ["ES2017", "DOM"]` 在类型检查时拦截；新的浏览器 API 由 eslint-plugin-compat 按 browserslist 拦截。功能检测后有意使用的 API（目前只有 `navigator.locks`）登记在 eslint-plugin-compat 的 `settings.polyfills` 白名单里。
 
 ---
 
@@ -261,7 +262,9 @@ export interface TabLeaderEnv {
 | 构建 | tsdown（rolldown + oxc），不用脚手架 | 0.23.x |
 | 单测 | vitest + `@vitest/coverage-v8` | 5.1.x |
 | 真实浏览器测试 | `@playwright/test`（Chromium、Firefox、WebKit 当前版本） | 1.65.x |
-| 代码检查 | ESLint + `@eslint/js` + typescript-eslint | 10.14.x、8.72.x |
+| 代码检查 | ESLint + `@eslint/js` + typescript-eslint + eslint-plugin-compat（浏览器 API 兼容检查） | 10.14.x、8.72.x、7.0.x |
+| 兼容范围 | browserslist（写在 `package.json`），全仓唯一来源 | — |
+| TS 内置库 | tsconfig `lib: ["ES2017", "DOM"]`，挡住 ES2017 以后的内置 API | — |
 | 格式化 | Prettier | 3.10.x |
 | 产物语法检查 | acorn，以 `ecmaVersion: 2017` 解析 `dist/*.js`、`dist/*.cjs` | 8.19.x |
 | 包管理 | pnpm，`packageManager` 锁定 | 11.x（本机 11.18.0） |
@@ -386,7 +389,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 
 - **一定要做**：提交前跑 `pnpm lint`、`pnpm test`、`pnpm typecheck`、`pnpm build`、`pnpm check:terms`；`dependencies` 保持为空；模块顶层不能有副作用；公开 API 有变化时同步更新 Spec、API 参考和两版 README。
 - **先问再做**：新增任何运行时依赖；改变公开 API 或存储 key 格式；在 GitHub 上创建 `haigeerlab/tab-leader`；任何 `git push`；`npm publish`（用户本人在交互终端完成 2FA）；打 `latest` 标签；重写 git 历史。
-- **不能做**：仓库的任何文件、提交信息和 git 历史里出现内部项目信息（首个接入方一律称「首个接入方」）；改动首个接入方的仓库和其他项目的文件；复制其他库的代码；产物超出 ES2017 语法；用 UA 判断浏览器；修改全局对象（比如给 `navigator.locks` 打补丁）。
+- **不能做**：仓库的任何文件、提交信息和 git 历史里出现内部项目信息（首个接入方一律称「首个接入方」）；改动首个接入方的仓库和其他项目的文件；复制其他库的代码；产物超出 ES2017 语法；用 UA 判断浏览器；未登记白名单就使用 browserslist 范围外的浏览器 API；修改全局对象（比如给 `navigator.locks` 打补丁）。
 - **0.x 不做**：标签页之间的消息分发（文档给出配合 `BroadcastChannel` 或 `storage` 事件的示例）；旧版本浏览器的自动化测试。
 
 ## 11. 成功标准
@@ -426,7 +429,8 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 - 验证两层：每次提交 CI 跑 Chromium、Firefox、WebKit 当前版本；每次发版前在旧版本上手动实测并记录。
 - 发布三步：0.1.0 先发 `next` 给首个接入方 → 旧版本实测通过且首个接入方线上稳定两周后打 `latest` → API 稳定前保持 0.x。
 - 0.x 不做消息分发。
-- 工具链按 ADR-0005：TypeScript 6.0（不用 7.0，因为 typescript-eslint 不支持）、tsdown、vitest、Playwright、ESLint + typescript-eslint + Prettier，不用脚手架。
+- 工具链按 ADR-0005：TypeScript 6.0（不用 7.0，因为 typescript-eslint 不支持）、tsdown、vitest、Playwright、ESLint + typescript-eslint + eslint-plugin-compat + Prettier，不用脚手架；代码检查选 ESLint 而不是 oxlint，因为 oxlint 加载 eslint-plugin-compat 只能走 alpha 的 JS 插件机制。
+- 兼容范围以 `package.json` 的 browserslist 为唯一来源；tsconfig `lib` 设为 `["ES2017", "DOM"]`。
 - README 中英两版、内容一致、默认中文；`docs/` 首版只写中文；`AGENTS.md` 为主，`CLAUDE.md` 引用它；发版前补齐 CONTRIBUTING、SECURITY、Issue 模板，不承诺响应时限。
 - 仓库任何地方（含 git 历史）都不出现内部项目信息。
 
@@ -438,3 +442,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 |---|---|
 | 2026-11-13 | 初稿；按需求拷问的结论补充真实浏览器测试、示例页、发版前旧版本实测、三步发布、0.x 不做消息分发、文档与治理文件、不出现内部信息等要求 |
 | 2026-11-13 | 补充工具链选型（ADR-0005）：TypeScript 由 7.0 改为 6.0，新增 ESLint、Prettier 与 `pnpm lint`，Node 下限改为 22.18，Q1 随之改写 |
+| 2026-11-13 | 代码检查确定用 ESLint（不用 oxlint），新增 eslint-plugin-compat、browserslist 唯一来源、tsconfig `lib: ["ES2017", "DOM"]`；ADR-0005 改正「oxlint 没有类型规则」的错误描述 |

@@ -16,7 +16,9 @@
 | 构建 | tsdown | 0.23.x（0.23.7） |
 | 单测 | vitest + `@vitest/coverage-v8` | 5.1.x |
 | 真实浏览器测试 | `@playwright/test` | 1.65.x |
-| 代码检查 | ESLint + `@eslint/js` + typescript-eslint | ESLint 10.14.x、typescript-eslint 8.72.x |
+| 代码检查 | ESLint + `@eslint/js` + typescript-eslint + eslint-plugin-compat | ESLint 10.14.x、typescript-eslint 8.72.x、eslint-plugin-compat 7.0.x |
+| 兼容范围 | browserslist 配置（写在 `package.json`），全仓唯一来源 | — |
+| TS 内置库 | tsconfig `lib: ["ES2017", "DOM"]` | — |
 | 格式化 | Prettier | 3.10.x |
 | 产物语法检查 | acorn | 8.19.x |
 | 包管理 | pnpm（`packageManager` 锁定） | 11.x |
@@ -31,7 +33,7 @@
 
 ### TS 版本：6.0，而不是 7.0
 
-最初倾向用 7.0（最新版，构建更快），查询依赖时发现：**typescript-eslint 8.72.2 的 peer 依赖要求 `typescript >=4.8.4 <6.1.0`，不支持 TS 7**。要用 TS 7，就只能放弃 ESLint 的 TS 规则，改用 oxlint 这类不依赖 TS 的检查器。
+最初倾向用 7.0（最新版，构建更快），查询依赖时发现：**typescript-eslint 8.72.2 的 peer 依赖要求 `typescript >=4.8.4 <6.1.0`，不支持 TS 7**。要用 TS 7，代码检查就得换成 oxlint（它的类型规则基于 TS 7）。代码检查选 ESLint 的理由见下文，TS 版本跟着这个选择走。
 
 选 6.0 的理由：
 
@@ -65,14 +67,37 @@ vitest 自带 TS 支持和 v8 覆盖率，和 pwa-platform 一致。`node:test` 
 
 Playwright 一套测试就能跑 Chromium、Firefox、WebKit。在 Chromium 上，它可以通过 CDP（`Page.setWebLifecycleState`）冻结页面，冻结接管的测试必须用到这个能力。
 
-### 代码检查和格式化：ESLint + typescript-eslint + Prettier
+### 代码检查：ESLint，而不是 oxlint
 
-| 备选 | 为什么不选 |
-|---|---|
-| Biome 2.6 | 一个工具同时管检查和格式化，速度快；但社区贡献者不如对 ESLint 熟，规则生态也小一些 |
-| oxlint 1.93 | 很快，也不依赖 TS 版本；但缺 typescript-eslint 那种基于类型信息的规则 |
+先说明 linter 在低版本兼容里的位置。兼容问题分三类，各有把关的手段：
 
-ESLint 与 pwa-platform 一致。格式化单独用 Prettier，不在 ESLint 里管格式。
+| 风险 | 例子 | 由谁拦 |
+|---|---|---|
+| 新语法 | `?.`、`??`、class 字段 | tsdown 降级到 ES2017，acorn 按 ES2017 解析产物兜底 |
+| 新的 JS 内置 API | `Array.prototype.at`、`Object.hasOwn`、`structuredClone` | tsconfig `lib: ["ES2017", "DOM"]`，类型检查报错（构建降级不会补 API） |
+| 新的浏览器 API | `crypto.randomUUID`、`BroadcastChannel`、`AbortController` | **只有 eslint-plugin-compat** 能按 browserslist 检查；TS 的 DOM 类型不区分浏览器版本 |
+
+最后还有真实浏览器测试和旧版本手动实测兜底。所以 linter 的选择，关键在第三类。
+
+| | ESLint + typescript-eslint | oxlint（含类型规则 tsgolint） |
+|---|---|---|
+| 浏览器 API 兼容检查 | ✅ eslint-plugin-compat 7.0.2，稳定，周下载约 167 万 | ⚠️ 只能通过 JS 插件机制加载 ESLint 插件，官方标注 **alpha、不受语义化版本约束** |
+| 类型规则 | ✅ | ✅ 2026-07-22 宣布稳定，实现 typescript-eslint 61 条类型规则中的 59 条 |
+| TypeScript 版本 | 只能用 `<6.1.0` | 基于 TS 7（typescript-go） |
+| 速度 | 慢 | 官方基准快 10～20 倍；本库只有几百行源码，体会不到 |
+| 贡献者熟悉程度、生态 | 最高；与 pwa-platform 一致 | 较新 |
+
+结论：本库的卖点是旧浏览器兼容，浏览器 API 检查应该是稳定的一等能力，不能跑在 alpha 机制上。oxlint 的速度优势对这么小的库没有意义，TS 7 只改善开发体验、不影响使用者。所以选 ESLint，TS 用 6.0。
+
+eslint-plugin-compat 的用法：
+- 读 `package.json` 里的 browserslist：`chrome >= 80, edge >= 80, firefox >= 74, safari >= 13.1, ios_saf >= 12.4`；
+- 本库**有意**在功能检测之后使用的 API（目前只有 `navigator.locks`），在插件的 `settings.polyfills` 里逐个登记，并注释说明检测位置。登记清单就是「功能检测白名单」，新增条目要在代码评审时说明理由。
+
+oxlint 的 JS 插件转正，或 typescript-eslint 支持 TS 7 以后，可以重新评估。
+
+### 格式化：Prettier
+
+格式化单独用 Prettier，不在 ESLint 里管格式。Biome 能同时管检查和格式化，但贡献者不如对 Prettier 熟。
 
 ### 脚手架：不用
 

@@ -11,7 +11,7 @@
 - **零运行时依赖**：`dependencies` 必须为空。新增运行时依赖先问仓库所有者。
 - **无全局副作用**：模块顶层只有函数和常量；不读 `window`、不读写存储、不改全局对象（不给 `navigator.locks` 打补丁）。只有 `start()` 会碰浏览器 API。
 - **产物 ES2017**：`dist/` 里不能出现 `?.`、`??`、对象展开／剩余、class 字段等更新的语法；`pnpm build` 会用 acorn 校验。
-- **浏览器下限**：Chrome／Edge 80、Firefox 74、Safari 13.1、iOS 12.4。只做功能检测，不判断 UA。
+- **浏览器下限**：Chrome／Edge 80、Firefox 74、Safari 13.1、iOS 12.4，唯一来源是 `package.json` 的 browserslist。只做功能检测，不判断 UA。tsconfig `lib` 保持 `["ES2017", "DOM"]`；用到 browserslist 范围外的浏览器 API 时，eslint-plugin-compat 会报错，功能检测后有意使用的 API 要登记进它的 `settings.polyfills` 白名单并说明理由。
 - **存储 key 和记录格式是公开契约**（`docs/adr/0003-*`）：改动属于破坏性变更。
 - **不出现内部项目信息**：仓库的文件、提交信息、git 历史里都不能有任何内部项目名、业务字段、内部环境、内部路径。首个使用方一律称「首个接入方」。提交前跑 `pnpm check:terms`，敏感词表在仓库外，不要把词表内容写进仓库。
 - **不复制其他库的代码**，只借鉴思路，借鉴来源记在 `docs/architecture/overview.md` 第 7 节。

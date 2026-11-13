@@ -14,7 +14,9 @@
 | Android Chrome、App 内置 WebView | 跟随系统 | 按功能检测 | — |
 | 任意浏览器、localStorage 被禁用 | — | 有 Web Locks 走 `locks`（无停摆接管）；否则 `solo` | — |
 
-版本数据来源：`@mdn/browser-compat-data` 8.1.9（见[选型调研附录](research/selection.md#附浏览器支持数据)）。
+最低版本在代码里的唯一来源是 `package.json` 的 browserslist（`chrome >= 80, edge >= 80, firefox >= 74, safari >= 13.1, ios_saf >= 12.4`），eslint-plugin-compat 按它检查浏览器 API；改下限要同时改它和本文。
+
+各浏览器开始支持 Web Locks 的版本数据来源：`@mdn/browser-compat-data` 8.1.9（见[选型调研附录](research/selection.md#附浏览器支持数据)）。
 
 产物语法为 ES2017，以上浏览器都不需要 polyfill 或转译（ES2017 支持情况：Chrome 58、Firefox 53、Safari 11，均早于下限版本）。
 
