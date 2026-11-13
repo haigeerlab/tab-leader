@@ -48,7 +48,7 @@ describe('env', () => {
     const storage = usableStorage(world.openTab().env, 'p')!
     expect(readJson(storage, 'k')).toEqual({ ok: true, value: null })
     storage.setItem('k', '{bad')
-    expect(readJson(storage, 'k')).toEqual({ ok: true, value: null })
+    expect(readJson(storage, 'k')).toEqual({ ok: true, value: undefined })
     expect(writeJson(storage, 'k', { a: 1 })).toBe(true)
     expect(readJson(storage, 'k')).toEqual({ ok: true, value: { a: 1 } })
     expect(removeKey(storage, 'k')).toBe(true)

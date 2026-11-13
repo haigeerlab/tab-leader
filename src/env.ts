@@ -55,7 +55,10 @@ export function usableStorage(env: TabLeaderEnv, probeKey: string): Store | null
   }
 }
 
-/** Read and parse JSON. Corrupt content reads as `null`; only a throwing storage reports failure. */
+/**
+ * Read and parse JSON. A missing key reads as `null`, corrupt content as `undefined`;
+ * only a throwing storage reports failure.
+ */
 export function readJson(storage: Store, key: string): ReadResult {
   let raw: string | null
   try {
@@ -67,7 +70,7 @@ export function readJson(storage: Store, key: string): ReadResult {
   try {
     return { ok: true, value: JSON.parse(raw) as unknown }
   } catch {
-    return { ok: true, value: null }
+    return { ok: true, value: undefined }
   }
 }
 
