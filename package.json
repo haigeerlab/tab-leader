@@ -60,7 +60,8 @@
     "test:watch": "vitest",
     "check:terms": "node scripts/check-internal-terms.mjs",
     "demo": "pnpm build && node scripts/serve.mjs",
-    "test:browser": "pnpm build && playwright test"
+    "test:browser": "pnpm build && playwright test",
+    "verify:consumers": "node scripts/verify-consumers.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

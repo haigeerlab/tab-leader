@@ -44,7 +44,7 @@
 
 ## 阶段 4：交付
 
-- [ ] T12 打包验证（Vite 5 + legacy + TS 5.2、Nuxt 3.11）与体积报告
+- [x] T12 打包验证（Vite 5 + legacy + TS 5.2、Nuxt 3.11）与体积报告 — `pnpm verify:consumers`：Vite 5.4.21 + plugin-legacy 5.4.1 用 TS 5.2.2 类型检查、构建通过，legacy 产物含接入代码；Nuxt 3.11.2 构建通过，服务端渲染 200，服务端 `mode` 为 `none`、无报错。体积：tgz 14.62 KB；`dist/index.js` 15.39 KB（gzip 4.42 KB）；两层合计 minify + gzip **2.58 KB**（≤ 3 KB）。Nuxt 工程用 `npm install --before=2024-05-01` 安装：全新安装会拉到新版 nitropack 等间接依赖，连不含本库的空 Nuxt 3.11 工程都会 500，已用对照组确认与本库无关
 - [ ] T13 文档定稿、迁移说明与治理文件
 - [ ] T14 CI 配置文件（只写不推）
 - [ ] 检查点 C5（gate）：最终验收（AC1～AC10），交出 tgz，通知开始 V4 联调
