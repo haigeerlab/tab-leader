@@ -24,6 +24,7 @@
 
 ```bash
 pnpm install
+pnpm lint            # ESLint + Prettier 检查
 pnpm test            # 单测（vitest）
 pnpm test:browser    # 真实浏览器（Playwright：Chromium、Firefox、WebKit）
 pnpm typecheck
@@ -44,7 +45,7 @@ pnpm check:terms     # 内部敏感词扫描（加 --history 扫全部历史）
 | 浏览器兼容与实测证据 | `docs/compatibility.md` |
 | API 参考、场景示例 | `docs/guide/` |
 | 版本与发布 | `docs/release.md` |
-| 架构决策 | `docs/adr/` |
+| 架构决策（含工具链选型 ADR-0005） | `docs/adr/` |
 | 实现计划与任务 | `tasks/tab-leader/` |
 
 同一件事只在一处写全，其他地方链接过去。公开 API 变化时同步更新需求文档、API 参考和两版 README。

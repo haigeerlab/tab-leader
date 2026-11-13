@@ -251,19 +251,23 @@ export interface TabLeaderEnv {
 
 ---
 
-## 5. 技术栈（版本取自 npm registry，2026-11-13）
+## 5. 技术栈
 
-| 用途 | 选型 | 说明 |
+选型理由和备选方案见 [ADR-0005](../docs/adr/0005-toolchain.md)。版本取自 npm registry（2026-11-13）。
+
+| 用途 | 选型 | 版本 |
 |---|---|---|
-| 包管理 | pnpm 11.x（本机 11.18.0），`packageManager` 锁定 | — |
-| Node | `>=22`（本机 v24.18.0） | 只用于开发和构建 |
-| 语言 | TypeScript 7.0.x | tsdown 的 peer 依赖声明支持 `^5 \|\| ^6 \|\| ^7`；计划阶段先实测 TS 7 的类型检查和 d.ts 生成，有问题退回 6.0.x |
-| 构建 | tsdown 0.23.x（rolldown + oxc） | 一次产出 ESM、CJS 和 d.ts |
-| 单测 | vitest 5.1.x + `@vitest/coverage-v8` 5.1.x | — |
-| 真实浏览器测试 | `@playwright/test` 1.65.x | Chromium、Firefox、WebKit 当前版本 |
-| 产物语法检查 | acorn 8.19.x，`ecmaVersion: 2017` 解析 `dist/*.js`、`dist/*.cjs` | 用解析器判定，比正则可靠 |
-| CI | GitHub Actions | 推送远端后启用；创建远端仓库和推送都要先问 |
-| 运行时依赖 | **无** | `dependencies` 必须为空 |
+| 语言 | TypeScript | 6.0.x（typescript-eslint 8.72 只支持 `<6.1.0`，所以暂不用 7.0） |
+| 构建 | tsdown（rolldown + oxc），不用脚手架 | 0.23.x |
+| 单测 | vitest + `@vitest/coverage-v8` | 5.1.x |
+| 真实浏览器测试 | `@playwright/test`（Chromium、Firefox、WebKit 当前版本） | 1.65.x |
+| 代码检查 | ESLint + `@eslint/js` + typescript-eslint | 10.14.x、8.72.x |
+| 格式化 | Prettier | 3.10.x |
+| 产物语法检查 | acorn，以 `ecmaVersion: 2017` 解析 `dist/*.js`、`dist/*.cjs` | 8.19.x |
+| 包管理 | pnpm，`packageManager` 锁定 | 11.x（本机 11.18.0） |
+| Node（开发和构建） | `>=22.18`（tsdown 的要求） | 本机 v24.18.0 |
+| CI | GitHub Actions；推送远端后启用，建远端和推送都要先问 | — |
+| 运行时依赖 | **无**，`dependencies` 必须为空 | — |
 
 ## 6. 命令
 
@@ -272,6 +276,7 @@ pnpm install
 pnpm test                # vitest run（含覆盖率）
 pnpm test:browser        # playwright test（Chromium、Firefox、WebKit）
 pnpm typecheck           # tsc --noEmit
+pnpm lint                # eslint . && prettier --check .
 pnpm build               # tsdown && node scripts/check-dist.mjs（ES2017 解析 + 体积报告）
 pnpm demo                # 本地起示例页（构建产物 + 静态服务器），多开标签页手动观察
 pnpm pack                # 生成 tab-leader-<version>.tgz
@@ -379,7 +384,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 
 ## 10. 边界
 
-- **一定要做**：提交前跑 `pnpm test`、`pnpm typecheck`、`pnpm build`、`pnpm check:terms`；`dependencies` 保持为空；模块顶层不能有副作用；公开 API 有变化时同步更新 Spec、API 参考和两版 README。
+- **一定要做**：提交前跑 `pnpm lint`、`pnpm test`、`pnpm typecheck`、`pnpm build`、`pnpm check:terms`；`dependencies` 保持为空；模块顶层不能有副作用；公开 API 有变化时同步更新 Spec、API 参考和两版 README。
 - **先问再做**：新增任何运行时依赖；改变公开 API 或存储 key 格式；在 GitHub 上创建 `haigeerlab/tab-leader`；任何 `git push`；`npm publish`（用户本人在交互终端完成 2FA）；打 `latest` 标签；重写 git 历史。
 - **不能做**：仓库的任何文件、提交信息和 git 历史里出现内部项目信息（首个接入方一律称「首个接入方」）；改动首个接入方的仓库和其他项目的文件；复制其他库的代码；产物超出 ES2017 语法；用 UA 判断浏览器；修改全局对象（比如给 `navigator.locks` 打补丁）。
 - **0.x 不做**：标签页之间的消息分发（文档给出配合 `BroadcastChannel` 或 `storage` 事件的示例）；旧版本浏览器的自动化测试。
@@ -390,7 +395,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 
 - **AC1** `pnpm test` 全部通过；§9.1 的场景都有对应用例；变异清单逐条验证，每条都有用例失败；覆盖率达标。
 - **AC2** `pnpm test:browser` 在 Chromium、Firefox、WebKit 上全部通过（§9.2 中标「仅 Chromium」「尽力」的按说明处理）。
-- **AC3** `pnpm typecheck`、`pnpm build` 通过；`dist/` 有 ESM（`.js`）、CJS（`.cjs`）、类型声明（`.d.ts`／`.d.cts`），全部能用 acorn 以 ES2017 解析。
+- **AC3** `pnpm lint`、`pnpm typecheck`、`pnpm build` 通过；`dist/` 有 ESM（`.js`）、CJS（`.cjs`）、类型声明（`.d.ts`／`.d.cts`），全部能用 acorn 以 ES2017 解析。
 - **AC4** `package.json`：`dependencies` 为空，`sideEffects: false`，`exports` 提供 `import`／`require`／`types` 三种条件，`files` 只含 `dist`、两版 README、LICENSE、CHANGELOG，有 `publishConfig`（公共 registry、`access: public`）。
 - **AC5** `pnpm pack` 的包在两个临时样例工程里都能 import 并构建通过：Vite 5 + `@vitejs/plugin-legacy` 5.4.1（用 TypeScript ~5.2 做类型检查）；Nuxt 3.11（含服务端渲染时 import 不报错）。
 - **AC6** 报告包体积：tgz 大小、`dist` 各文件原始和 gzip 大小、两层合计 minify + gzip 大小。目标 ≤ 3 KB，超出要说明原因，不卡交付。
@@ -404,7 +409,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 
 不阻塞实现，结论写回本文：
 
-- **Q1** TypeScript 7 生成的 d.ts 能否被 TS 5.2 读取（AC5），不行退回 TS 6.0.x。
+- **Q1** tsdown 用 TS 6 生成的 d.ts 能否被 TS 5.2 读取（AC5）。不行的话，调整 d.ts 的生成方式，比如降低声明文件里用到的类型语法。
 - **Q2** 体积目标 3 KB 是估计值，实现后按实测调整。
 - **Q3** 各引擎在 Playwright 下 bfcache 是否可测（§9.2），不可测的场景标记跳过并写明原因。
 
@@ -421,6 +426,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 - 验证两层：每次提交 CI 跑 Chromium、Firefox、WebKit 当前版本；每次发版前在旧版本上手动实测并记录。
 - 发布三步：0.1.0 先发 `next` 给首个接入方 → 旧版本实测通过且首个接入方线上稳定两周后打 `latest` → API 稳定前保持 0.x。
 - 0.x 不做消息分发。
+- 工具链按 ADR-0005：TypeScript 6.0（不用 7.0，因为 typescript-eslint 不支持）、tsdown、vitest、Playwright、ESLint + typescript-eslint + Prettier，不用脚手架。
 - README 中英两版、内容一致、默认中文；`docs/` 首版只写中文；`AGENTS.md` 为主，`CLAUDE.md` 引用它；发版前补齐 CONTRIBUTING、SECURITY、Issue 模板，不承诺响应时限。
 - 仓库任何地方（含 git 历史）都不出现内部项目信息。
 
@@ -431,3 +437,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 日期 | 变更 |
 |---|---|
 | 2026-11-13 | 初稿；按需求拷问的结论补充真实浏览器测试、示例页、发版前旧版本实测、三步发布、0.x 不做消息分发、文档与治理文件、不出现内部信息等要求 |
+| 2026-11-13 | 补充工具链选型（ADR-0005）：TypeScript 由 7.0 改为 6.0，新增 ESLint、Prettier 与 `pnpm lint`，Node 下限改为 22.18，Q1 随之改写 |
