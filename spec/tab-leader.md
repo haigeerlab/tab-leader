@@ -1,6 +1,6 @@
 # Spec：tab-leader
 
-<!-- spec-guard: review approved 4a609f3de468 -->
+<!-- spec-guard: review approved adfc3f40c21f -->
 
 > 状态：**已批准（仓库所有者，2026-11-13）**　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
 > 相关文档：选型调研 [docs/research/selection.md](../docs/research/selection.md)、架构 [docs/architecture/overview.md](../docs/architecture/overview.md)、兼容性 [docs/compatibility.md](../docs/compatibility.md)、发布策略 [docs/release.md](../docs/release.md)。
