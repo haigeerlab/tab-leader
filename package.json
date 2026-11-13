@@ -1,0 +1,72 @@
+{
+  "name": "tab-leader",
+  "version": "0.1.0",
+  "description": "Elect one leader among same-origin browser tabs, take over from frozen leaders, and fall back to localStorage leases on browsers without Web Locks.",
+  "keywords": [
+    "tab",
+    "leader",
+    "leader-election",
+    "web-locks",
+    "localStorage",
+    "cross-tab",
+    "multi-tab"
+  ],
+  "license": "MIT",
+  "author": "haigeerlab",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haigeerlab/tab-leader.git"
+  },
+  "homepage": "https://github.com/haigeerlab/tab-leader#readme",
+  "bugs": "https://github.com/haigeerlab/tab-leader/issues",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "browserslist": [
+    "chrome >= 80",
+    "edge >= 80",
+    "firefox >= 74",
+    "safari >= 13.1",
+    "ios_saf >= 12.4"
+  ],
+  "scripts": {
+    "build": "tsdown && node scripts/check-dist.mjs",
+    "typecheck": "tsc --noEmit",
+    "check:terms": "node scripts/check-internal-terms.mjs"
+  },
+  "devDependencies": {
+    "acorn": "~8.19.0",
+    "tsdown": "~0.23.7",
+    "typescript": "~6.0.3"
+  },
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  }
+}

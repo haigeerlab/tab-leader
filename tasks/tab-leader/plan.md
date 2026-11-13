@@ -1,6 +1,6 @@
 # 实现计划：tab-leader 0.1.0
 
-<!-- spec-guard: review pending -->
+<!-- spec-guard: review approved -->
 
 > 需求文档：[spec/tab-leader.md](../../spec/tab-leader.md)（已批准）　｜　任务清单：[todo.md](todo.md)
 > 本计划只写「按什么顺序做、怎么验证」；行为规则引用 Spec 编号（R*、I*、AC*）。
