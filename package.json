@@ -58,7 +58,8 @@
     "format": "prettier --write .",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
-    "check:terms": "node scripts/check-internal-terms.mjs"
+    "check:terms": "node scripts/check-internal-terms.mjs",
+    "demo": "pnpm build && node scripts/serve.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

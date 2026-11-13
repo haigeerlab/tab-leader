@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tab-leader demo</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1f2328;
+        --muted: #59636e;
+        --line: #d1d9e0;
+        --leader: #1a7f37;
+        --follower: #9a6700;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #e6edf3;
+          --muted: #9198a1;
+          --line: #3d444d;
+          --leader: #3fb950;
+          --follower: #d29922;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      p.hint {
+        color: var(--muted);
+        margin: 0 0 20px;
+      }
+      section {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      .role {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .role[data-leader='true'] {
+        color: var(--leader);
+      }
+      .role[data-leader='false'] {
+        color: var(--follower);
+      }
+      dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        margin: 12px 0;
+      }
+      dt {
+        color: var(--muted);
+      }
+      dd {
+        margin: 0;
+        font-family: ui-monospace, monospace;
+        overflow-wrap: anywhere;
+      }
+      button {
+        font: inherit;
+        padding: 4px 12px;
+        margin-right: 8px;
+      }
+      ol {
+        margin: 0;
+        padding-left: 24px;
+        max-height: 240px;
+        overflow: auto;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>tab-leader demo</h1>
+      <p class="hint">
+        在同一浏览器里多开几个本页面：只有一个是 Leader；关掉它，另一个会接手。URL 参数：
+        <code>?strategy=lease</code>、<code>?strategy=solo</code>、<code>?interval=5000</code>。
+      </p>
+
+      <section>
+        <h2>createTabLeader</h2>
+        <div class="role" id="role" data-leader="false">Follower</div>
+        <dl>
+          <dt>mode</dt>
+          <dd id="mode">none</dd>
+          <dt>name</dt>
+          <dd id="name"></dd>
+          <dt>strategy</dt>
+          <dd id="strategy"></dd>
+        </dl>
+        <button id="relinquish" type="button">relinquish()</button>
+        <button id="destroy" type="button">destroy()</button>
+      </section>
+
+      <section>
+        <h2>createTabInterval</h2>
+        <dl>
+          <dt>interval</dt>
+          <dd id="interval"></dd>
+          <dt>runs in this tab</dt>
+          <dd id="runs">0</dd>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Log</h2>
+        <ol id="log"></ol>
+      </section>
+    </main>
+
+    <script type="module">
+      import { createTabInterval, createTabLeader } from '../dist/index.js'
+
+      const params = new URLSearchParams(location.search)
+      const number = (key) => (params.has(key) ? Number(params.get(key)) : undefined)
+      const name = params.get('name') || 'tab-leader-demo'
+      const strategy = params.get('strategy') || 'auto'
+      // Timing overrides, used by the browser tests to keep them fast.
+      const timing = {
+        leaseTtl: number('leaseTtl'),
+        leaseRenewInterval: number('leaseRenewInterval'),
+        leaseConfirmDelay: number('leaseConfirmDelay'),
+        aliveInterval: number('aliveInterval'),
+        stallTimeout: number('stallTimeout'),
+      }
+      const interval = number('interval') || 10000
+
+      const $ = (id) => document.getElementById(id)
+      const state = { events: [], runs: [] }
+      window.demo = state
+
+      function log(text) {
+        const entry = { at: Date.now(), text }
+        state.events.push(entry)
+        const item = document.createElement('li')
+        item.textContent = new Date(entry.at).toLocaleTimeString() + '  ' + text
+        $('log').prepend(item)
+      }
+
+      function render() {
+        $('role').textContent = leader.isLeader ? 'Leader' : 'Follower'
+        $('role').dataset.leader = String(leader.isLeader)
+        $('mode').textContent = leader.mode
+        $('runs').textContent = String(state.runs.length)
+      }
+
+      const leader = createTabLeader({
+        name,
+        strategy,
+        ...timing,
+        onLeader() {
+          log('onLeader')
+          render()
+        },
+        onFollower() {
+          log('onFollower')
+          render()
+        },
+      })
+
+      const ticker = createTabInterval({
+        name: name + ':interval',
+        strategy,
+        ...timing,
+        interval,
+        run() {
+          state.runs.push(Date.now())
+          log('interval run')
+          render()
+        },
+      })
+
+      state.leader = leader
+      state.ticker = ticker
+      $('name').textContent = name
+      $('strategy').textContent = strategy
+      $('interval').textContent = interval + ' ms'
+      $('relinquish').onclick = () => leader.relinquish()
+      $('destroy').onclick = () => {
+        leader.destroy()
+        ticker.destroy()
+        log('destroyed')
+        render()
+      }
+
+      leader.start()
+      ticker.start()
+      log('started')
+      render()
+    </script>
+  </body>
+</html>

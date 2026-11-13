@@ -38,7 +38,7 @@
 
 ## 阶段 3：示例页与真实浏览器测试
 
-- [ ] T10 示例页（含 UI 自验截图）
+- [x] T10 示例页（含 UI 自验截图）— 内置浏览器（Chromium）自验：3 个标签页只有 1 个显示绿色「Leader」、其余「Follower」，mode 显示 locks；关掉 Leader 页后另一页立即变为 Leader 并记录 onLeader；`?strategy=lease` 时 mode 显示 lease、只有一个 Leader；interval 区块按 5 s 记录运行。默认端口用 4789（4173 在本机浏览器里被其他应用的缓存页占用）
 - [ ] T11 Playwright 三引擎（连续 3 次通过）
 - [ ] 检查点 C4（report）：结果写进兼容性文档
 
