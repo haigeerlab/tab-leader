@@ -6,11 +6,7 @@ export type TabLeaderMode = 'locks' | 'lease' | 'solo' | 'none'
 
 /** Minimal Web Locks surface the library relies on. */
 export interface TabLeaderLockManager {
-  request(
-    name: string,
-    options: { steal?: boolean },
-    callback: (lock: unknown) => unknown,
-  ): Promise<unknown>
+  request(name: string, options: { steal?: boolean }, callback: (lock: unknown) => unknown): Promise<unknown>
 }
 
 /** Browser globals used by the library. Injected in tests; defaults to the real globals. */

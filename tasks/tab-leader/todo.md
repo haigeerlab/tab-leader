@@ -5,9 +5,9 @@
 
 ## 阶段 0：工程与工具链
 
-- [ ] T1 构建链与产物检查（含 Q1：TS 5.2 读取 d.ts 实测）
-- [ ] T2 质量链（ESLint + compat、Prettier、vitest 覆盖率）
-- [ ] 检查点 C1（report）：lint、typecheck、build、test 通过；Q1 结论
+- [x] T1 构建链与产物检查（含 Q1：TS 5.2 读取 d.ts 实测）— `ee8bc91`，10 个文件。验证：`Object.hasOwn` 触发类型错误；`?.`、`??` 被降级；ES2020 产物被 check-dist 拦下。**Q1 通过**：TypeScript 5.2.2 在 `bundler`、`node16`、`node10` 三种解析方式、`skipLibCheck: false` 下都能读取 d.ts
+- [x] T2 质量链（ESLint + compat、Prettier、vitest 覆盖率）— 提交见 git log。验证：`crypto.randomUUID()` 被 compat 报错（列出 Safari 13.1、iOS 12.2～12.5、Firefox 74、Edge 80、Chrome 80）；覆盖率阈值 90% 配在 `pnpm test:coverage`，T9 起并入 `pnpm test`
+- [x] 检查点 C1（report）：lint、typecheck、build、test 全部通过；Q1 通过（见 T1）
 
 ## 阶段 1：下层 `createTabLeader`
 

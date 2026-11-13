@@ -29,7 +29,9 @@ for (const required of ['index.js', 'index.cjs', 'index.d.ts', 'index.d.cts']) {
 console.log('[check-dist] file                 raw      gzip')
 for (const file of files.sort()) {
   const buf = readFileSync(join(dir, file))
-  console.log(`[check-dist] ${file.padEnd(20)} ${String(buf.length).padStart(6)}  ${String(gzipSync(buf).length).padStart(6)}`)
+  console.log(
+    `[check-dist] ${file.padEnd(20)} ${String(buf.length).padStart(6)}  ${String(gzipSync(buf).length).padStart(6)}`,
+  )
 }
 
 if (failed) process.exit(1)

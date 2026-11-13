@@ -40,7 +40,7 @@ for (const file of git('ls-files', '-co', '--exclude-standard').split('\n').filt
 }
 
 if (process.argv.includes('--history')) {
-  let log = ''
+  let log
   try {
     log = git('log', '--all', '-p', '--format=commit %H%n%B')
   } catch {
@@ -54,4 +54,6 @@ if (hits.length) {
   for (const hit of hits) console.error('  ' + hit)
   process.exit(1)
 }
-console.log(`[check-internal-terms] clean (${patterns.length} patterns${process.argv.includes('--history') ? ', history included' : ''}).`)
+console.log(
+  `[check-internal-terms] clean (${patterns.length} patterns${process.argv.includes('--history') ? ', history included' : ''}).`,
+)

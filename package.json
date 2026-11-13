@@ -53,13 +53,27 @@
   ],
   "scripts": {
     "build": "tsdown && node scripts/check-dist.mjs",
-    "typecheck": "tsc --noEmit",
-    "check:terms": "node scripts/check-internal-terms.mjs"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:terms": "node scripts/check-internal-terms.mjs",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "~24.19.2",
+    "@vitest/coverage-v8": "~5.1.0",
     "acorn": "~8.19.0",
+    "eslint": "~10.14.0",
+    "eslint-plugin-compat": "~7.0.2",
+    "globals": "^17.14.0",
+    "prettier": "~3.10.1",
     "tsdown": "~0.23.7",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "~8.72.2",
+    "vitest": "~5.1.0"
   },
   "packageManager": "pnpm@11.18.0",
   "engines": {
