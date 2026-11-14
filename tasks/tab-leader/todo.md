@@ -48,3 +48,8 @@
 - [x] T13 文档定稿、迁移说明与治理文件 — 新增 `docs/guide/migration.md`（存储对照、格式不一致时的行为、新旧混开、API 差异写法）；API 参考按 `src/types.ts` 定稿并列出导出类型；场景示例 1～4 在 Chromium 两个标签页里实跑通过；两版 README 改状态行、加迁移说明和参与贡献，11 节段落一一对应（英文版文档节多一句“文档为中文”）；AGENTS.md 命令段定稿；新增 CHANGELOG、CONTRIBUTING、SECURITY、两个 Issue 模板；相对链接与锚点 0 处断链；`check:terms` 通过
 - [x] T14 CI 配置文件（只写不推）— `.github/workflows/ci.yml`：Node 22、24 矩阵，checkout@v7、pnpm/action-setup@v6（读 packageManager）、setup-node@v7、失败时上传报告（upload-artifact@v7）；本机无 actionlint，用 PyYAML 解析通过，7 条 `pnpm` 命令逐条与 `package.json` 脚本核对一致，本地 `pnpm install --frozen-lockfile` 通过。未推送，推送后才生效
 - [x] 检查点 C5（gate）：最终验收（AC1～AC10），交出 tgz，通知开始 V4 联调 — 2026-11-13 批准（含 Spec §9.2 冻结模拟方式修订）；tgz `tab-leader-0.1.0.tgz`（sha256 812db323…29c2）已交到共享目录；未推送、未发布
+
+## 延后补测（V5）
+
+- [ ] 延期：Safari 13.1（macOS 10.15）V5 第 9、10 步手动补测，步骤见 `docs/compatibility.md` 4.3 节，结果写进 3.2 节；恢复条件：仓库所有者有空在云真机的手动会话里测
+- [ ] 延期：iOS Safari V5 第 1～10 步补测，用 iOS 12.5.x 真机顶替 12.4（仓库所有者已认可），结果写进 `docs/compatibility.md` 3.2 节；恢复条件：拿到 iOS 12.x 真机
