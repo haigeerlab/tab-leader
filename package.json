@@ -1,6 +1,6 @@
 {
   "name": "tab-leader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Elect one leader among same-origin browser tabs, take over from frozen leaders, and fall back to localStorage leases on browsers without Web Locks.",
   "keywords": [
     "tab",
