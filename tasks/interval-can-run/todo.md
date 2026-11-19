@@ -16,6 +16,6 @@
   - 覆盖率：语句 98.98%、分支 97.02%、行 100%（`interval.ts` 语句 100%、分支 97.77%）。UI 未涉及
 - [x] 检查点 C1（report）：lint、typecheck、test、build 全部通过 — 121 个用例通过；`pnpm lint`、`pnpm typecheck` 通过；`pnpm build` 产物 ES2017 解析通过，`index.js` 16432 字节（gzip 4756）
 - [x] T3 文档同步：`spec/tab-leader.md`（含变更记录）、API 参考、两版 README — 本提交，5 个文件。`spec/tab-leader.md`：§2.2 加字段、§3.6 新增 I7 并在 I1 第 1 步引用、§9.1 加场景与变异条目、变更记录追加一行；API 参考选项表加 `canRun` 并写明说明四条；两版 README 示例加 `canRun`（通用场景「本页身份与共享身份不一致时跳过」）并写明与 `key` 抛错处理相反，中英文逐句对照一致。`pnpm lint`、`pnpm check:terms` 通过。UI 未涉及
-- [ ] T4 版本号、CHANGELOG `[0.2.0]` 与发布记录（`package.json` 经公共变更请求）
+- [x] T4 版本号、CHANGELOG `[0.2.0]` 与发布记录（`package.json` 经公共变更请求）— `caf518d`，2 个文件（CHANGELOG `[0.2.0] - 待发布`、发布记录 0.2.0 行写明 V5 不重做）；`package.json` 的 `version` 经公共变更请求 C10 由模块协调在集成分支提交 `a1fb80f`，`module-crew sync` 合入（`1a8d8d0`）。UI 未涉及
 - [ ] T5 `module-crew sync` 合入集成分支并全量检查（含 `pnpm test:browser`、`pnpm check:terms`）
 - [ ] 检查点 C2（gate）：最终验收，按 AC1～AC8 给证据，发最终验收【交审】
