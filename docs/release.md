@@ -45,12 +45,13 @@
 由仓库所有者本人在**交互终端**里执行（npm 账号开了 2FA，非交互 shell 会报 `ERR_PNPM_OTP_NON_INTERACTIVE`）：
 
 1. 从干净的克隆、`main` 分支最新提交开始，`git status` 为空。
-2. `npm whoami` 确认账号；`npm view tab-leader versions` 确认目标版本不存在。
+2. `npm whoami` 确认账号（报 401 说明登录已过期，先 `npm login`）；`npm view tab-leader versions` 确认目标版本不存在。
 3. 确认 V1～V5 都有记录（兼容性文档、实现计划的 todo）；`pnpm install --frozen-lockfile`、`pnpm lint`、`pnpm test`、`pnpm test:browser`、`pnpm build`、`pnpm verify:consumers`、`pnpm check:terms --history`。
-4. 更新 CHANGELOG、版本号，提交并打 tag `v<版本>`。
+4. 更新 CHANGELOG、版本号，提交；打 tag `v<版本>` 并推到远端。用 module-crew 协调开发的 checkout 装了只认 `module-crew merge push` 的 pre-push 钩子，所有者自己推 tag 时加 `--no-verify`：`git push --no-verify origin v<版本>`。
 5. `pnpm publish --access public --tag next`。
-6. 到 registry 读回：`npm view tab-leader@<版本>`，确认 `dist-tags`、文件列表、`dependencies` 为空。
-7. 满足 `latest` 条件后：`npm dist-tag add tab-leader@<版本> latest`，再读回确认。
+6. **批准暂存版本。** 本包走 npm 的暂存发布：上一步打印「Published」后，版本只是进了暂存区，registry 上还查不到（`npm view` 报 404）。到 npmjs.com 本包页面的「Staged Packages」批准，或 `npm stage list tab-leader` 查出 ID 后 `npm stage approve <ID>`，都要过 2FA。不要再次 publish：同一版本已在暂存区时会报 `409 Cannot publish over previously staged version`。
+7. 到 registry 读回：`npm view tab-leader@<版本>`，确认 `dist-tags`、文件列表、`dependencies` 为空。
+8. 满足 `latest` 条件后：`npm dist-tag add tab-leader@<版本> latest`，再读回确认。
 
 推送、发布、打 `latest` 每一步都需要所有者明确同意。
 
