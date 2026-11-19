@@ -70,6 +70,7 @@ const task = createTabInterval({
   name: 'my-app:report',
   interval: 3 * 60 * 1000,
   key: () => currentUserId(),   // 身份变了立即补一次
+  canRun: () => pageUserId() === currentUserId(), // 本页身份与共享身份不一致时跳过
   run: () => fetch('/api/report', { method: 'POST' }),
 })
 task.start()
@@ -79,13 +80,21 @@ task.check()
 
 ### 选项
 
-除了下面三项，其余与 `createTabLeader` 相同（不含 `onLeader`、`onFollower`）。
+除了下面四项，其余与 `createTabLeader` 相同（不含 `onLeader`、`onFollower`）。
 
 | 选项 | 类型 | 说明 |
 |---|---|---|
 | `interval` | `number`（毫秒） | 两次运行的最小间隔，严格判断，差 1 毫秒也不运行 |
 | `run` | `() => unknown` | 要做的事。返回值被忽略；同步抛错和 Promise 拒绝都被吞掉，不重试 |
 | `key` | `() => string` | 可选。运行上下文的标识，和上次运行时不同就立即运行。抛错时沿用上次的值，不会因此触发运行 |
+| `canRun` | `() => boolean` | 可选（0.2.0 起）。本页现在能不能运行。每次检查时、读上次运行记录之前调用；只有返回 `false` 才跳过：本轮不读写记录、不调用 `key` 和 `run`，**1 秒后**再检查（固定间隔，不可配置）。**抛错按 `true` 处理**，照常运行，与 `key` 抛错时不运行相反 |
+
+`canRun` 的几点说明：
+
+- 跳过不会推后间隔：条件恢复后，没有记录、`key` 变了或已到期就立即运行（最多晚 1 秒），否则照常等到期。
+- 一直返回 `false` 期间，Leader 每秒调用一次 `canRun`，任务不运行；页面在后台时计时器会被浏览器节流，这个 1 秒也可能被拉长。请让它保持同步、便宜。
+- `check()`、切回前台、成为 Leader 时也会先问 `canRun`；失去 Leader 或 `destroy()` 之后不再调用。
+- 只有 Leader 调用 `canRun`；Leader 跳过时其他标签页也不会运行。
 
 ### 返回值 `TabInterval`
 
