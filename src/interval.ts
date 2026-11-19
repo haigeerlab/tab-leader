@@ -2,6 +2,9 @@ import { createCore } from './core'
 import { isRecord, readJson, writeJson } from './env'
 import type { TabInterval, TabIntervalOptions } from './types'
 
+/** Fixed delay before asking `canRun` again after a skip (I7 step 4). */
+const RETRY_DELAY = 1000
+
 interface Last {
   at: number
   id: string
@@ -9,7 +12,7 @@ interface Last {
 
 /** Run `options.run` at most once per `options.interval` across all tabs sharing `options.name`. */
 export function createTabInterval(options: TabIntervalOptions): TabInterval {
-  const { interval, run, key } = options
+  const { interval, run, key, canRun } = options
   const lastKey = options.name + ':last'
   let memory: Last | null = null
   let timer: unknown = null
@@ -78,8 +81,23 @@ export function createTabInterval(options: TabIntervalOptions): TabInterval {
     }
   }
 
+  /** Only a strict `false` skips; a throwing canRun() counts as true (I7 step 3). */
+  function blocked(): boolean {
+    if (!canRun) return false
+    try {
+      return canRun() === false
+    } catch {
+      return false
+    }
+  }
+
   function tick(): void {
     if (!core.isLeader || !core.verify()) return
+    // Skip without touching the record, key() or run(); ask again shortly (I7).
+    if (blocked()) {
+      schedule(RETRY_DELAY)
+      return
+    }
     const last = readLast()
     const id = currentId(last)
     const now = core.env!.now()

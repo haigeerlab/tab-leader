@@ -103,6 +103,8 @@ export interface TabIntervalOptions
   run: () => unknown
   /** 可选：运行上下文的标识（比如当前登录身份）；和上次运行时不同就立即运行 */
   key?: () => string
+  /** 可选（0.2.0）：本页现在能不能运行；返回 false 时本轮跳过，1 秒后再检查（I7） */
+  canRun?: () => boolean
 }
 
 export interface TabInterval {
@@ -217,7 +219,7 @@ export interface TabLeaderEnv {
 内部用同名的 `createTabLeader`：`onLeader` 时开始计时，`onFollower` 时清掉计时器。
 
 - **I1** **到期判断**（每次 tick）：
-  1. 不是 Leader 就返回；租约档先重新读一次租约核对所有权，不只看缓存状态；
+  1. 不是 Leader 就返回；租约档先重新读一次租约核对所有权，不只看缓存状态；传了 `canRun` 时接着按 I7 判断，跳过就结束本轮；
   2. `id = key ? String(key()) : ''`；`key()` 抛错时沿用上次记录里的 `id`，不因抛错触发运行；
   3. 读 `${name}:last`。没有记录、`id` 和上次不同、或 `now - at >= interval` 时运行：**先**写入 `{ at: now, id }`，**再**调用 `run()`；
   4. **时钟回拨**：`now < last.at` 时不运行，只把记录的 `at` 改成 `now`，从现在起重新计时；
@@ -227,6 +229,14 @@ export interface TabLeaderEnv {
 - **I4** `run()` 同步抛错和返回的 Promise 拒绝都被吞掉，不重试，不影响下一个周期。
 - **I5** 「上次运行」记录：localStorage 可用就放在 localStorage；不可用，或运行中读写抛错、内容损坏时，退回本页内存里的记录，不会因为读不到而提前运行。
 - **I6** solo 档（没有存储）每个标签页各自按 `interval` 运行，这是唯一不满足「全浏览器只跑一次」的情况。
+- **I7** **执行前跳过**（0.2.0，详见 [spec/interval-can-run.md](interval-can-run.md)）：
+  1. I1 第 1 步通过后、读 `${name}:last` 和调用 `key()` 之前调用 `canRun()`；不是 Leader 时不调用；
+  2. 严格返回 `false` 时本轮结束：不读写 `${name}:last`、不调用 `key()` 和 `run()`、不改内存记录，I1 第 3、4 步都不发生；
+  3. 返回其他值或抛错时照 I1 往下走；异常被吞掉；
+  4. 跳过后把唯一的计时器改成 1000 毫秒后再 tick，间隔固定、不可配置；
+  5. I3 的其他触发照常先问 `canRun()`，它们安排的计时器取代挂着的重试；
+  6. 失去 Leader、暂停、销毁时按 R14 让挂着的重试失效，`destroy()` 之后不再调用 `canRun()`；
+  7. 不传 `canRun` 时与 0.1.0 一致。
 
 ### 3.7 各档保证程度（对外文档必须有这张表）
 
@@ -377,11 +387,11 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 租约 | 3 个标签页只有一个 Leader；正常关闭删掉租约、其他标签页立即接手；挂起超过有效期后被接手；旧 Leader 恢复后放弃；运行中存储失效降级为 solo；pagehide 时删掉租约 |
 | Web Locks 不可用 | `request()` 未授予就立即拒绝：存储可用时降到 `lease` 且只有一个 Leader，不可用时降到 `solo`；请求次数等于标签页数（不重试），真实事件循环没有被卡住；上层只运行一次（R8a） |
 | 通用 | 能力四种组合（有无 Web Locks × 有无 localStorage）；`strategy` 起始档；bfcache 暂停与恢复、重复 pageshow、普通加载的 pageshow；回调严格配对；回调抛错不打断状态机；`relinquish` 三档；`destroy` 移除全部监听、之后 `start` 无效；不同 `name` 互不影响 |
-| 上层 | 每个间隔只运行一次；接手时距上次不满间隔不运行；间隔严格（差 1 毫秒）；刷新 5 次只运行 1 次；key 变了立即运行；`check()`；切回前台、聚焦、计时器同时触发只运行一次；`run` 失败或抛错不影响下个周期；`key()` 抛错不触发运行；时钟回拨；运行中存储抛错 |
+| 上层 | 每个间隔只运行一次；接手时距上次不满间隔不运行；间隔严格（差 1 毫秒）；刷新 5 次只运行 1 次；key 变了立即运行；`check()`；切回前台、聚焦、计时器同时触发只运行一次；`run` 失败或抛错不影响下个周期；`key()` 抛错不触发运行；时钟回拨；运行中存储抛错；`canRun`（I7）：返回 `false` 时不读写记录、不调用 `key`／`run`，到期、`key` 变化、时钟回拨三条分支都被跳过，转 `true` 后 1 秒重试时补上，未到期则等到期，抛错按 `true`，`check()`／切回前台重新判断，`destroy()`／失去 Leader 后重试失效，`clearTimeout` 后仍触发的过期重试不起作用 |
 | 迁移兼容 | 用旧格式的 `:lease`、`:last` 记录启动，行为正确；不写存活记录的旧 Leader 不被抢 |
 | 环境 | 无 `window` 时 import 和 `start()` 都不报错，`mode` 为 `'none'`；创建时不访问任何浏览器 API |
 
-- **变异检查**：手动进行，每条变异都要有用例失败，结果记进计划文件。至少包括：去掉停摆接管；去掉被抢后让出；去掉 R5 的存活记录核对；停摆阈值改为 0；去掉时钟回拨保护；去掉租约降级；去掉排队时的代次检查；去掉 tick 前的租约核对；间隔判断从 `>=` 改成 `>` 或带容差；去掉回调配对保护；去掉 `destroy` 里移除监听的代码。
+- **变异检查**：手动进行，每条变异都要有用例失败，结果记进计划文件。至少包括：去掉停摆接管；去掉被抢后让出；去掉 R5 的存活记录核对；停摆阈值改为 0；去掉时钟回拨保护；去掉租约降级；去掉排队时的代次检查；去掉 tick 前的租约核对；间隔判断从 `>=` 改成 `>` 或带容差；去掉回调配对保护；去掉 `destroy` 里移除监听的代码；I7 的去掉 `canRun` 调用、调用挪到读记录之后、跳过时仍写记录、重试间隔改 0 或改到期时间、去掉重试的代次检查、抛错按 `false`、假值即跳过。
 - **覆盖率**：语句和分支都 ≥ 90%（v8），没覆盖到的行要说明原因。
 
 ### 9.2 真实浏览器测试（Playwright，每次提交）
@@ -467,3 +477,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 实现中修订（C3 交审）：§2.3 `TabLeaderEnv` 改为只声明实际用到的最小接口，新增公开类型 `TabLeaderLockManager`；§7 新增 `src/core.ts`（两层共用的状态机） |
 | 2026-11-13 | 实现中修订（T11，范围内）：§9.2 冻结接管的模拟方式由 `Page.setWebLifecycleState` 改为 `Debugger.pause`，原因是前者在 Playwright 下对始终处于前台的页面不生效；场景与验收不变 |
 | 2026-11-13 | 缺陷修复（V5 实测发现）：新增 R8a，`request()` 还没拿到锁就被拒绝时降级而不重试，修复 Chrome 阻止所有网站数据时的微任务死循环；R8 限定为拿到锁之后的拒绝；§9.1 新增对应场景 |
+| 2026-11-19 | 新增 I7（`createTabInterval` 的可选参数 `canRun`，执行前跳过、固定 1 秒重试）：§2.2 加字段，§3.6 新增 I7 并在 I1 第 1 步引用，§9.1 加场景与变异条目；详见模块 Spec [interval-can-run](interval-can-run.md)。来源：仓库所有者 2026-11-19 批准接口方向，模块 Spec 与 Plan 已批准 |

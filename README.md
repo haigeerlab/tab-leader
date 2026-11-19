@@ -58,11 +58,14 @@ const task = createTabInterval({
   name: 'my-app:presence',
   interval: 3 * 60 * 1000,
   key: () => currentUserId(),   // 身份变了立即补一次
+  canRun: () => pageUserId() === currentUserId(), // 可选：本页身份与共享身份不一致时跳过，1 秒后再问
   run: () => reportPresence(),  // 失败不重试，不影响下个周期
 })
 task.start()
 task.check()   // 立即检查一次（到期或 key 变了才运行，不强制）
 ```
+
+`canRun` 返回 `false` 时本轮什么都不做（不读写运行记录、不运行），1 秒后再检查；条件满足后按原规则补上。注意两者抛错时的处理相反：`canRun` 抛错按 `true` 处理（照常运行），`key` 抛错则不会因此触发运行。
 
 完整参数见 [API 参考](docs/guide/api.md)，更多用法见[场景示例](docs/guide/recipes.md)。
 
