@@ -58,11 +58,14 @@ const task = createTabInterval({
   name: 'my-app:presence',
   interval: 3 * 60 * 1000,
   key: () => currentUserId(),   // run again right away when the identity changes
+  canRun: () => pageUserId() === currentUserId(), // optional: skip while this page's identity differs from the shared one; asked again after 1 s
   run: () => reportPresence(),  // failures are not retried and do not affect the next cycle
 })
 task.start()
 task.check()   // check now (runs only if due or the key changed; never forces a run)
 ```
+
+When `canRun` returns `false`, the tick does nothing at all (the run record is neither read nor written, nothing runs) and it asks again after 1 second; once it allows, the usual rules apply. Note that the two handle errors in opposite ways: a throwing `canRun` counts as `true` (the task runs as usual), while a throwing `key` never triggers a run.
 
 See the [API reference](docs/guide/api.md) for every option and the [recipes](docs/guide/recipes.md) for more usage.
 
