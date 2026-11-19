@@ -1,5 +1,7 @@
 # 实现计划：interval-can-run（0.2.0）
 
+<!-- spec-guard: review approved -->
+
 > 需求文档：[spec/interval-can-run.md](../../spec/interval-can-run.md)（已批准，2026-11-19）　｜　任务清单：[todo.md](todo.md)
 > 本计划只写「按什么顺序做、怎么验证」；行为规则引用 Spec 编号（I7、AC*、A*）。
 

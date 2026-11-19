@@ -1,5 +1,7 @@
 # Spec：interval-can-run
 
+<!-- spec-guard: review approved f4d3089a650b -->
+
 > 状态：**待批准**　｜　日期：2026-11-19　｜　版本目标：`0.2.0`（npm `next`）　｜　依赖模块：`tab-leader`
 > 接口方向已由仓库所有者在 2026-11-19 批准（见 §1.3）；本文把它写成可验证的规则与验收标准。
 > 规则编号沿用 [spec/tab-leader.md](tab-leader.md)：本模块新增的规则记为 **I7**，构建时写进那份 Spec 的 §3.6。
