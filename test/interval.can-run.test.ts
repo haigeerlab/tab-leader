@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { createTabInterval } from '../src/interval'
 import { createLog, INTERVAL, MIN, openTask, SEC } from './interval-helpers'
 import { createWorld } from './world'
 
@@ -202,5 +203,29 @@ describe('createTabInterval canRun (I7)', () => {
     await world.advance(MIN)
     expect(log.times()).toHaveLength(0)
     expect(others.every((t) => !t.task.isLeader)).toBe(true)
+  })
+
+  test('a stale retry that still fires after clearTimeout does nothing (R14)', async () => {
+    const world = createWorld()
+    const tab = world.openTab()
+    // A browser may still run a task that was already queued when clearTimeout was called.
+    const env = { ...tab.env, clearTimeout: () => {} }
+    const gate = createGate()
+    const task = createTabInterval({
+      name: 'app',
+      interval: INTERVAL,
+      run: () => {},
+      canRun: gate.canRun,
+      env,
+    })
+    task.start()
+    await world.advance(SEC / 2) // skipped once: a retry is pending at 1000 ms
+    world.hide(tab)
+    world.show(tab) // leader again: skipped once more, a new retry at 1500 ms
+    await world.advance(SEC / 4)
+    const calls = gate.calls
+    await world.advance(SEC / 2) // the stale 1000 ms retry fires here
+    expect(gate.calls).toBe(calls)
+    task.destroy()
   })
 })
