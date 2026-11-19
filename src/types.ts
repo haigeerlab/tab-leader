@@ -70,6 +70,12 @@ export interface TabIntervalOptions extends Omit<TabLeaderOptions, 'onLeader' | 
   run: () => unknown
   /** Optional context identity; a change triggers an immediate run. */
   key?: () => string
+  /**
+   * Optional: whether this tab may run right now. Asked on every tick before the shared record is read.
+   * Returning `false` skips the tick entirely (no record read or written, no `key()`, no run) and asks
+   * again after 1 s. A throw counts as `true`. Keep it synchronous and cheap.
+   */
+  canRun?: () => boolean
 }
 
 export interface TabInterval {
