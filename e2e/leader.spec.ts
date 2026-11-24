@@ -80,6 +80,22 @@ for (const strategy of ['auto', 'lease'] as const) {
     const events = (await read(rest[second]!)).events
     expect(events.filter((e) => e === 'onLeader')).toHaveLength(1)
   })
+
+  test(`${mode}: a follower calls requestLeadership() and takes over (R17)`, async ({ context }) => {
+    const pages = await openPages(context, `strategy=${strategy}&name=e2e-request-${mode}`, 3)
+    const old = await singleLeader(pages)
+    const target = (old + 1) % pages.length
+    await pages[target]!.click('#request-leadership')
+    await expect.poll(async () => (await read(pages[target]!)).isLeader).toBe(true)
+    expect(await singleLeader(pages)).toBe(target)
+
+    const before = (await read(pages[old]!)).events
+    expect(before[before.length - 1]).toBe('onFollower')
+    expect(before.filter((e) => e === 'onLeader')).toHaveLength(1)
+    const after = (await read(pages[target]!)).events
+    expect(after.filter((e) => e === 'onLeader')).toHaveLength(1)
+    expect(after.filter((e) => e === 'onFollower')).toHaveLength(0)
+  })
 }
 
 test('solo: every page is a leader', async ({ context }) => {

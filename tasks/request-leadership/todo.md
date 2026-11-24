@@ -17,7 +17,9 @@
   - M9 暂停／`destroy()` 后仍生效：2 个失败
   - 覆盖率：语句 99.01%、分支 97.09%、行 100%（`core.ts` 分支 94.17%，未覆盖的是原有的 `browserEnv` 外壳与 `destroy` 分支，本模块新增代码全覆盖）。UI 未涉及
 - [x] 检查点 C1（report）：lint、typecheck、test、build 全部通过 — `pnpm lint`、`pnpm typecheck` 通过；`pnpm test` 147 个用例通过；`pnpm build` 产物 ES2017 解析通过，`index.js` 17264 字节（gzip 4994，0.2.0 为 16432／4756）
-- [ ] T4 示例页按钮与真实浏览器场景（含 UI 自验）
+- [x] T4 示例页按钮与真实浏览器场景（含 UI 自验）— 本提交，3 个文件（`demo/index.html`、`e2e/leader.spec.ts`、本清单）。`pnpm test:browser` 连跑 3 次都是 19 个通过、5 个按 Spec §9.2 跳过（原 13 个通过，新增 `locks`／`lease` 抢主场景 × 3 个引擎 = 6 个）；示例页修改后再跑 1 次，结果相同。e2e 检查的是抢主后稳定只有一个 Leader、原 Leader 最后一条日志是 `onFollower`；`locks` 档抢锁与 `AbortError` 投递之间有 Spec 已写明的极短双 Leader 窗口，所以不在抢主过程中逐次采样断言
+  - **UI 自验**（内置浏览器，`node scripts/serve.mjs`，两个标签页打开同一 `name` 的示例页）：`locks` 档在 Follower 页点 `requestLeadership()`，它显示 Leader、日志多一条 `onLeader`；原 Leader 显示 Follower、日志末尾 `onFollower`。`?strategy=lease` 再做一遍，结果相同（`mode` 显示 `lease`）
+  - 自验发现：示例页在 `onFollower` 里立即 `render()`，此时库的 `isLeader` 仍为 `true`（`core.ts` 先通知再改状态，`relinquish()` 也一样，是 0.1.0 起的既有行为），原 Leader 页面会一直显示「Leader」，手动实测会误以为有两个 Leader。示例页改为 `setTimeout(render, 0)`，修改后复测上述两档均显示正确。库本身的这个时序不在本模块范围内，最终验收时作为后续事项报告
 - [ ] T5 文档同步：`spec/tab-leader.md`（含变更记录）、API 参考（含「快速接管」）、两版 README、兼容性清单
 - [ ] T6 版本号、CHANGELOG `[0.3.0]` 与发布记录（`package.json` 经公共变更请求）
 - [ ] T7 `module-crew sync` 合入集成分支并全量检查（含 `pnpm test:browser`、`pnpm check:terms --history`）
