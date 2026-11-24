@@ -311,6 +311,12 @@ describe.each(MODES)(
       expect(leaders([a, b])).toEqual([a])
       expect(a.events).toEqual(['L', 'F', 'L'])
       expect(b.events).toEqual(['L', 'F'])
+      // The rejoin scheduled by relinquish() (lease: one leaseRenewInterval later) must not fire.
+      await world.advance(MIN - 2 * STEP + 10)
+      expect(a.leader.isLeader).toBe(true)
+      await world.advance(5 * MIN)
+      expect(leaders([a, b])).toEqual([a])
+      expect(a.events).toEqual(['L', 'F', 'L'])
     })
   },
 )
