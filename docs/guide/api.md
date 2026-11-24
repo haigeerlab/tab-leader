@@ -1,6 +1,6 @@
 # API 参考
 
-> 对应版本：0.1.0。本文按 `src/types.ts` 的类型定义写成，两者不一致时以类型定义为准，并修正本文。
+> 对应版本：0.3.0。本文按 `src/types.ts` 的类型定义写成，两者不一致时以类型定义为准，并修正本文。
 > 行为细节的唯一事实源是需求文档 [spec/tab-leader.md](../../spec/tab-leader.md)。
 
 ```ts
@@ -55,9 +55,62 @@ leader.start()
 |---|---|
 | `start()` | 检测能力、注册生命周期事件、参选。重复调用无效；`destroy()` 之后调用无效 |
 | `relinquish()` | 主动让出。Web Locks 档排到队尾（没有别人排队时会马上重新当选）；租约档等一个续期间隔再参选；solo 档无效 |
+| `requestLeadership()` | 0.3.0 起。本标签页不是 Leader 时主动抢主：Web Locks 档抢锁，租约档覆盖租约，原 Leader 让出并收到 `onFollower`。已是 Leader、solo 档、`start()` 之前、页面进入 bfcache 期间、`destroy()` 之后调用无效。详见下文 |
 | `destroy()` | 停止参选，移除所有事件监听，释放锁或删掉自己的租约。是 Leader 时会先调 `onFollower` |
 | `isLeader` | 只读，当前是否 Leader |
 | `mode` | 只读，`'locks' \| 'lease' \| 'solo' \| 'none'`。`start()` 之前和非浏览器环境为 `'none'` |
+
+### 主动抢主 `requestLeadership()`
+
+选谁当 Leader 默认是先来后到。想让某个标签页（通常是用户正在看的那个）当 Leader，就在它上面调用 `requestLeadership()`：
+
+```ts
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') leader.requestLeadership()
+})
+```
+
+- **结果是异步的**：调用返回时 `isLeader` 还是 `false`；Web Locks 档在浏览器授予锁之后、租约档在 `leaseConfirmDelay` 之后成为 Leader，照常调用 `onLeader`。`onLeader`／`onFollower` 仍严格交替。
+- **原 Leader 怎么让出**：Web Locks 档它的锁被抢走，收到 `onFollower` 后重新排队；租约档它在收到租约的 `storage` 事件、下一次续期核对（或 `createTabInterval` 运行前的核对）时发现租约不是自己的，收到 `onFollower`。
+- **租约档只能尽力保证**：两个标签页几乎同时写租约时，以最后写入的为准；没抢到的保持追随者，不会自动重试。
+- **可能短暂出现两个 Leader**：原 Leader 正被系统暂停（后台冻结、iOS 切到后台）时收不到通知，恢复后、让出前它仍认为自己是 Leader。业务回调要能容忍这个短暂窗口。
+- **不要在 `focus` 里无条件调用**：并排可见的几个窗口会来回互抢，每次换主都会调一次 `onFollower`／`onLeader`。库不做退避或限流，几个标签页先后调用时最后一个当选。`visibilitychange` 变为 `visible` 只发生在切到这个标签页时，适合用来触发。
+- `createTabInterval` 没有这个方法。
+
+## 快速接管
+
+默认的时长参数偏保守：Leader 被冻结后，Web Locks 档约 3～4 分钟、租约档约 150 秒才有人接手。如果 Leader 承担的是要尽快恢复的事（例如多个标签页共用的一条长连接），可以接受更频繁的 localStorage 读写，就把时长调短。不改参数时行为与以前相同。
+
+### 推荐参数
+
+`createTabLeader` 和 `createTabInterval` 都适用：
+
+```ts
+const fastTakeover = {
+  leaseTtl: 6000,
+  leaseRenewInterval: 2000,
+  aliveInterval: 2000,
+  stallTimeout: 6000,
+}
+
+const leader = createTabLeader({ name: 'my-app:socket', ...fastTakeover, onLeader, onFollower })
+```
+
+**依据**：[兼容性文档](../compatibility.md) 3.2 节的旧版本浏览器实测用的就是这组参数。Chrome 80 冻结 Leader 后约 5 秒由别的标签页接手（`locks` 档 4.8 秒、`lease` 档 5.1 秒）；Firefox 74、Safari 13.1 把 Leader 所在窗口最小化 60 秒，没有误换 Leader。
+
+### 下限
+
+自己调参数时不要低于：
+
+- `leaseRenewInterval`、`aliveInterval` 不低于 1000 毫秒。后台标签页的计时器每秒最多执行一次，更短会把正常的后台 Leader 误判成停摆。
+- `leaseTtl` ≥ 3 × `leaseRenewInterval`。
+- `stallTimeout` ≥ 3 × `aliveInterval`。
+
+### 还没验证过的情况
+
+- 浏览器对在后台超过 5 分钟的页面做强力节流（计时器大约每分钟才执行一次）时，续租和存活记录会晚于 6 秒。**所有标签页都在后台时，可能每分钟换一次 Leader**。
+- iOS Safari 暂停后台标签页时同理。
+- 每次换 Leader 都会调 `onFollower`／`onLeader`，业务要能承受。前台标签页在变为可见时调用 [`requestLeadership()`](#主动抢主-requestleadership)，可以把 Leader 稳定在用户正在看的标签页上。
 
 ---
 

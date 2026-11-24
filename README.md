@@ -45,7 +45,14 @@ leader.isLeader      // 当前是否 Leader
 leader.mode          // 'locks' | 'lease' | 'solo' | 'none'
 leader.relinquish()  // 主动让出
 leader.destroy()     // 停止
+
+// 0.3.0 起：页面回到前台时主动抢主，原 Leader 让出并收到 onFollower
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') leader.requestLeadership()
+})
 ```
+
+`requestLeadership()` 只在本标签页不是 Leader 时有效，结果是异步的（当选时照常调用 `onLeader`）。不要在 `focus` 里无条件调用：并排可见的几个窗口会互相抢。Leader 被冻结后想几秒内就有人接手，见 API 参考的[快速接管](docs/guide/api.md#快速接管)。
 
 ### 定时任务：`createTabInterval`
 
@@ -122,6 +129,7 @@ Web Locks（locks）──不支持──▶ localStorage 租约（lease）─�
 ## 已知限制
 
 - `lease` 档只能尽力保证唯一。
+- `requestLeadership()` 抢主时，如果原 Leader 正被系统暂停（后台冻结、iOS 切到后台），它恢复后、让出前会与新 Leader 短暂同时存在。
 - 系统时钟往前跳会让间隔看起来提前满足，需要严格限频时请在后端按服务端时间去重。
 - 后台计时器会被浏览器节流，`createTabInterval` 的实际间隔可能比设定值多出约 1 分钟。
 - 有 Web Locks 但 localStorage 不可用时，不做冻结接管，`createTabInterval` 每次刷新都会立即运行一次。
