@@ -132,96 +132,185 @@ describe('requestLeadership: Web Locks mode (R17 step 2)', () => {
   })
 })
 
-describe('requestLeadership: common rules (R17 steps 1, 5, 6)', () => {
-  test('no effect when already the leader', async () => {
-    const world = createWorld()
-    const [a, b] = [join(world), join(world)]
-    await world.advance(10)
-    const before = snapshot(world, [a, b])
-    a.leader.requestLeadership()
-    await world.advance(MIN / 2)
-    expect(snapshot(world, [a, b])).toBe(before)
-  })
+describe('requestLeadership: lease mode (R17 step 3)', () => {
+  const SEC = 1000
+  const leaseOwner = (world: World) =>
+    (JSON.parse(world.store.get('app:lease') ?? 'null') as { tab?: string } | null)?.tab
 
-  test('no effect in solo mode', async () => {
-    const world = createWorld({ locks: false, storage: 'none' })
-    const a = join(world)
-    await world.advance(10)
-    expect(a.leader.mode).toBe('solo')
-    a.leader.requestLeadership()
-    await world.advance(10)
-    expect(a.events).toEqual(['L'])
-  })
-
-  test('no effect before start() and outside a browser', async () => {
-    const world = createWorld()
-    const tab = world.openTab()
-    const idle = createTabLeader({ name: 'app', env: tab.env })
-    idle.requestLeadership()
-    await world.advance(10)
-    expect(idle.mode).toBe('none')
-    expect(world.lockRequests).toBe(0)
-    expect(world.store.size).toBe(0)
-
-    const server = createTabLeader({ name: 'app' })
-    server.start()
-    expect(() => server.requestLeadership()).not.toThrow()
-    expect(server.mode).toBe('none')
-  })
-
-  test('no effect while suspended (pagehide) or after destroy()', async () => {
-    const world = createWorld()
+  test('a follower overwrites the lease and leads after the confirmation; the old leader yields', async () => {
+    const world = createWorld({ locks: false })
     const [a, b, c] = [join(world), join(world), join(world)]
-    await world.advance(10)
-    world.hide(b.tab)
-    c.leader.destroy()
-    await world.advance(10)
-    const before = snapshot(world, [a, b, c])
-    b.leader.requestLeadership()
+    await world.advance(SEC)
+    expect(a.leader.isLeader).toBe(true)
+    const leaseOfA = leaseOwner(world)
     c.leader.requestLeadership()
-    await world.advance(MIN / 2)
-    expect(snapshot(world, [a, b, c])).toBe(before)
-  })
-
-  test('repeated calls: elected once, onLeader called once', async () => {
-    const world = createWorld()
-    const [a, b] = [join(world), join(world)]
-    await world.advance(10)
-    b.leader.requestLeadership()
-    b.leader.requestLeadership()
-    await world.advance(10)
-    b.leader.requestLeadership()
-    await world.advance(MIN)
-    expect(leaders([a, b])).toEqual([b])
-    expect(b.events).toEqual(['L'])
-    expect(a.events).toEqual(['L', 'F'])
-  })
-
-  test('two tabs one after another: the last caller leads, callbacks stay paired', async () => {
-    const world = createWorld()
-    const [a, b, c] = [join(world), join(world), join(world)]
-    await world.advance(10)
-    b.leader.requestLeadership()
-    await world.advance(10)
-    c.leader.requestLeadership()
-    await world.advance(10)
+    await world.advance(49)
+    expect(c.leader.isLeader).toBe(false) // not before leaseConfirmDelay
+    await world.advance(1)
     expect(leaders([a, b, c])).toEqual([c])
+    expect(leaseOwner(world)).not.toBe(leaseOfA)
     expect(a.events).toEqual(['L', 'F'])
-    expect(b.events).toEqual(['L', 'F'])
     expect(c.events).toEqual(['L'])
   })
 
-  test('called after relinquish() while waiting to compete again: takes over at once (A3)', async () => {
-    const world = createWorld()
+  test('the new leader keeps renewing; the old one neither deletes the lease nor takes it back', async () => {
+    const world = createWorld({ locks: false })
+    const members = [join(world), join(world), join(world)]
+    await world.advance(SEC)
+    members[2]!.leader.requestLeadership()
+    await world.advance(SEC)
+    const leaseOfC = leaseOwner(world)
+    for (let i = 0; i < 10; i++) {
+      await world.advance(MIN)
+      expect(leaders(members)).toEqual([members[2]])
+      expect(leaseOwner(world)).toBe(leaseOfC)
+    }
+  })
+
+  test('old leader misses the storage event: it yields on its next renewal check', async () => {
+    const world = createWorld({ locks: false })
     const [a, b] = [join(world), join(world)]
-    await world.advance(10)
-    a.leader.relinquish()
-    await world.advance(10)
+    await world.advance(SEC)
+    world.freeze(a.tab)
+    b.leader.requestLeadership()
+    await world.advance(SEC)
     expect(b.leader.isLeader).toBe(true)
-    a.leader.requestLeadership()
-    await world.advance(10)
-    expect(leaders([a, b])).toEqual([a])
-    expect(a.events).toEqual(['L', 'F', 'L'])
-    expect(b.events).toEqual(['L', 'F'])
+    a.tab.pending.length = 0 // drop the queued storage events
+    world.unfreeze(a.tab)
+    expect(a.leader.isLeader).toBe(true) // the known short window
+    await world.advance(MIN)
+    expect(leaders([a, b])).toEqual([b])
+    expect(a.events).toEqual(['L', 'F'])
+  })
+
+  test('overwritten by another tab before the confirmation: stays a follower and does not retry', async () => {
+    const world = createWorld({ locks: false })
+    const [a, b] = [join(world), join(world)]
+    await world.advance(SEC)
+    b.leader.requestLeadership()
+    const other = JSON.stringify({ tab: 'other', gen: 1, exp: world.now + 10 * MIN })
+    world.openTab().env.localStorage!.setItem('app:lease', other)
+    await world.advance(30 * SEC)
+    expect(b.leader.isLeader).toBe(false)
+    expect(b.events).toEqual([])
+    expect(world.store.get('app:lease')).toBe(other)
+    expect(a.leader.isLeader).toBe(false) // the lease is not a's either
+  })
+
+  test('writing the lease throws: degrade to solo', async () => {
+    const world = createWorld({ locks: false })
+    const [a, b] = [join(world), join(world)]
+    await world.advance(SEC)
+    world.storageBroken = true
+    b.leader.requestLeadership()
+    await world.advance(SEC)
+    expect(b.leader.mode).toBe('solo')
+    expect(b.leader.isLeader).toBe(true)
+    expect(a.leader.mode).toBe('lease')
   })
 })
+
+const MODES = [
+  { mode: 'locks', worldOptions: {} },
+  { mode: 'lease', worldOptions: { locks: false } },
+] as const
+
+describe.each(MODES)(
+  'requestLeadership: common rules in $mode mode (R17 steps 1, 5, 6)',
+  ({ worldOptions }) => {
+    // Long enough for a lock grant (microtasks) and for the lease confirmation (leaseConfirmDelay 50 ms).
+    const STEP = 1000
+
+    test('no effect when already the leader', async () => {
+      const world = createWorld(worldOptions)
+      const [a, b] = [join(world), join(world)]
+      await world.advance(STEP)
+      const before = snapshot(world, [a, b])
+      a.leader.requestLeadership()
+      await world.advance(MIN / 2)
+      expect(snapshot(world, [a, b])).toBe(before)
+    })
+
+    test('no effect in solo mode', async () => {
+      const world = createWorld({ locks: false, storage: 'none' })
+      const a = join(world)
+      await world.advance(STEP)
+      expect(a.leader.mode).toBe('solo')
+      a.leader.requestLeadership()
+      await world.advance(STEP)
+      expect(a.events).toEqual(['L'])
+    })
+
+    test('no effect before start() and outside a browser', async () => {
+      const world = createWorld(worldOptions)
+      const tab = world.openTab()
+      const idle = createTabLeader({ name: 'app', env: tab.env })
+      idle.requestLeadership()
+      await world.advance(STEP)
+      expect(idle.mode).toBe('none')
+      expect(world.lockRequests).toBe(0)
+      expect(world.store.size).toBe(0)
+
+      const server = createTabLeader({ name: 'app' })
+      server.start()
+      expect(() => server.requestLeadership()).not.toThrow()
+      expect(server.mode).toBe('none')
+    })
+
+    test('no effect while suspended (pagehide) or after destroy()', async () => {
+      const world = createWorld(worldOptions)
+      const [a, b, c] = [join(world), join(world), join(world)]
+      await world.advance(STEP)
+      world.hide(b.tab)
+      c.leader.destroy()
+      await world.advance(STEP)
+      const before = snapshot(world, [a, b, c])
+      b.leader.requestLeadership()
+      c.leader.requestLeadership()
+      await world.advance(MIN / 2)
+      expect(snapshot(world, [a, b, c])).toBe(before)
+    })
+
+    test('repeated calls: elected once, onLeader called once', async () => {
+      const world = createWorld(worldOptions)
+      const [a, b] = [join(world), join(world)]
+      await world.advance(STEP)
+      b.leader.requestLeadership()
+      b.leader.requestLeadership()
+      await world.advance(STEP)
+      b.leader.requestLeadership()
+      await world.advance(MIN)
+      expect(leaders([a, b])).toEqual([b])
+      expect(b.events).toEqual(['L'])
+      expect(a.events).toEqual(['L', 'F'])
+    })
+
+    test('two tabs one after another: the last caller leads, callbacks stay paired', async () => {
+      const world = createWorld(worldOptions)
+      const [a, b, c] = [join(world), join(world), join(world)]
+      await world.advance(STEP)
+      b.leader.requestLeadership()
+      await world.advance(STEP)
+      c.leader.requestLeadership()
+      await world.advance(STEP)
+      expect(leaders([a, b, c])).toEqual([c])
+      expect(a.events).toEqual(['L', 'F'])
+      expect(b.events).toEqual(['L', 'F'])
+      expect(c.events).toEqual(['L'])
+    })
+
+    test('called after relinquish() while waiting to compete again: takes over at once (A3)', async () => {
+      const world = createWorld(worldOptions)
+      const [a, b] = [join(world), join(world)]
+      await world.advance(STEP)
+      a.leader.relinquish()
+      await world.advance(STEP)
+      expect(b.leader.isLeader).toBe(true)
+      a.leader.requestLeadership()
+      await world.advance(STEP)
+      expect(leaders([a, b])).toEqual([a])
+      expect(a.events).toEqual(['L', 'F', 'L'])
+      expect(b.events).toEqual(['L', 'F'])
+    })
+  },
+)
