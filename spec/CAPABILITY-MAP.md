@@ -16,8 +16,9 @@
 |---|---|---|
 | tab-leader | 两层 API：通用选主 `createTabLeader`（Web Locks → 租约 → solo、停摆接管、失去 Leader 通知）和跨标签页限频的定时任务 `createTabInterval`；含工程、构建产物、单测与真实浏览器测试、示例页、文档与打包验证。 | — |
 | interval-can-run | createTabInterval 新增可选的执行前跳过钩子 canRun：返回 false 时本轮不读写运行记录、不执行任务，固定 1 秒后重试；随 0.2.0 发布。 | tab-leader |
+| request-leadership | createTabLeader 新增公开方法 requestLeadership()：非 Leader 主动抢主（locks 档 steal 抢锁、lease 档覆盖租约，旧 Leader 让出并收到 onFollower）；文档补「快速接管」推荐参数与节流说明；随 0.3.0 发布。 | tab-leader |
 
-Build order: tab-leader → interval-can-run
+Build order: tab-leader → interval-can-run → request-leadership
 
 <!-- Spec Guard 按严格串行推进。为兼容上游格式，逗号分组会按左到右顺序展开为单模块步骤，不代表并行授权。 -->
 
@@ -43,3 +44,4 @@ Build order: tab-leader → interval-can-run
 ## 变更记录
 
 - 2026-11-19：新增模块 `interval-can-run`（依赖 `tab-leader`，Build order 排在其后）。原因：首个接入方实测发现接手的 Leader 会按旧身份执行一次，需要执行前跳过的能力。来源：首个接入方经会话间信箱提出，仓库所有者在对话中批准
+- 2026-11-24：新增模块 `request-leadership`（依赖 `tab-leader`，Build order 排在最后）。原因：首个接入方要在多标签页共用一条连接的场景里让前台标签页主动成为 Leader，并需要快速接管的参数说明。来源：首个接入方经会话间信箱提出，仓库所有者在对话中批准
