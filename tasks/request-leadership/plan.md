@@ -1,6 +1,6 @@
 # 实现计划：request-leadership（0.3.0）
 
-<!-- spec-guard: review pending -->
+<!-- spec-guard: review approved -->
 
 > 需求文档：[spec/request-leadership.md](../../spec/request-leadership.md)（已批准，2026-11-25）　｜　任务清单：[todo.md](todo.md)
 > 本计划只写「按什么顺序做、怎么验证」；行为规则引用 Spec 编号（R17、AC*、A*）。
