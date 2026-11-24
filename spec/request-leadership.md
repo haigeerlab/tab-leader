@@ -1,6 +1,6 @@
 # Spec：request-leadership
 
-<!-- spec-guard: review pending -->
+<!-- spec-guard: review approved 8099cd2060c2 -->
 
 > 状态：**待批准**　｜　日期：2026-11-24　｜　版本目标：`0.3.0`（npm `next`）　｜　依赖模块：`tab-leader`
 > 接口方向已由仓库所有者在 2026-11-24 批准（见 §1.3）；本文把它写成可验证的规则与验收标准。
