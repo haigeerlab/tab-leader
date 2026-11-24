@@ -89,10 +89,15 @@ export function createLocksDriver(core: Core): Driver {
     const now = core.env.now()
     // Missing, corrupt or future-dated records never count as a stall.
     if (!record || record.at > now || now - record.at <= core.settings.stallTimeout) return false
+    steal()
+    return true
+  }
+
+  /** Take the lock from its holder (R6 stall takeover, R17 requestLeadership). */
+  function steal(): void {
     // A new generation invalidates the queued normal request; when it is granted it returns at once.
     core.newGeneration()
     request(true)
-    return true
   }
 
   return {
@@ -109,6 +114,7 @@ export function createLocksDriver(core: Core): Driver {
       else checkStall()
     },
     onStorage: () => {},
+    takeOver: steal,
     rejoinDelay: 0,
   }
 }

@@ -89,6 +89,7 @@ export function createLeaseDriver(core: Core): Driver {
       if (core.state === 'leader') verify()
       else tryAcquire()
     },
+    takeOver() {},
     rejoinDelay: core.settings.leaseRenewInterval,
   }
 }
