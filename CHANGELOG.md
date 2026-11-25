@@ -2,7 +2,7 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。0.x 期间次版本号可能包含破坏性变更，会在对应版本下单独标出，见[发布策略](docs/release.md)。
 
-## [0.3.0] - 待发布
+## [0.3.0] - 2026-11-25
 
 试用版，发布到 npm `next` 标签，不移动 `latest`。没有破坏性变更：不调用新方法、不改时长参数时行为与 0.2.0 完全一致。这次改了选主逻辑，发布前要走完 V1～V5（见[发布策略](docs/release.md)）。
 
