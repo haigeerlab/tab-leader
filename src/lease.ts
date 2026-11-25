@@ -32,8 +32,12 @@ export function createLeaseDriver(core: Core): Driver {
     if (current === 'failed') return core.degrade()
     if (current === 'held') return
     if (!writeLease()) return core.degrade()
+    confirmLater()
+  }
+
+  /** Read back after a moment: when two tabs write at once, the last writer wins (R10). */
+  function confirmLater(): void {
     acquiring = true
-    // Read back after a moment: when two tabs write at once, the last writer wins (R10).
     core.later(() => {
       acquiring = false
       if (core.state !== 'waiting') return
@@ -41,6 +45,17 @@ export function createLeaseDriver(core: Core): Driver {
       if (confirmed === 'failed') core.degrade()
       else if (confirmed === 'mine') core.becomeLeader()
     }, core.settings.leaseConfirmDelay)
+  }
+
+  /** R17: overwrite the lease whoever holds it, confirm, and keep competing as usual if that fails. */
+  function takeOver(): void {
+    // Drops pending renewal, confirmation and rejoin timers; the loop is restarted below.
+    core.newGeneration()
+    competing = true
+    acquiring = false
+    if (!writeLease()) return core.degrade()
+    confirmLater()
+    loop()
   }
 
   /** Leader: renew after checking ownership. Follower: try to acquire. (R10, R11) */
@@ -89,6 +104,7 @@ export function createLeaseDriver(core: Core): Driver {
       if (core.state === 'leader') verify()
       else tryAcquire()
     },
+    takeOver,
     rejoinDelay: core.settings.leaseRenewInterval,
   }
 }

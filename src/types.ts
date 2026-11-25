@@ -55,6 +55,14 @@ export interface TabLeader {
   start(): void
   /** Step down and rejoin the election. No effect when not the leader or in solo mode. */
   relinquish(): void
+  /**
+   * Take leadership from the current leader when this tab is not the leader: steals the lock (Web Locks)
+   * or overwrites the lease. The old leader steps down and gets `onFollower`. Asynchronous: `onLeader` is
+   * called once this tab has been elected. No effect when already the leader, in solo mode, before
+   * `start()`, while paused (back/forward cache) or after `destroy()`. A paused old leader may still act
+   * as leader for a moment after it resumes.
+   */
+  requestLeadership(): void
   /** Leave the election, remove all listeners, release the lock or own lease. Cannot be restarted. */
   destroy(): void
   /** Whether this tab is currently the leader. */

@@ -1,6 +1,6 @@
 # Spec：tab-leader
 
-<!-- spec-guard: review approved 6e5684209c04 -->
+<!-- spec-guard: review approved 31262c2c540a -->
 
 > 状态：**已批准（仓库所有者，2026-11-13）**　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
 > 相关文档：选型调研 [docs/research/selection.md](../docs/research/selection.md)、架构 [docs/architecture/overview.md](../docs/architecture/overview.md)、兼容性 [docs/compatibility.md](../docs/compatibility.md)、发布策略 [docs/release.md](../docs/release.md)。
@@ -79,6 +79,8 @@ export interface TabLeader {
   start(): void
   /** 主动让出 Leader 并重新排队（见 R12） */
   relinquish(): void
+  /** 不是 Leader 时主动抢主，原 Leader 让出（见 R17，0.3.0） */
+  requestLeadership(): void
   /** 停止参选，移除全部事件监听，释放锁或删掉自己的租约；不可再 start */
   destroy(): void
   /** 当前是否 Leader */
@@ -187,6 +189,12 @@ export interface TabLeaderEnv {
   - Web Locks 档：排到队尾；没有别的标签页在排队时会马上重新当选。
   - 租约档：等一个 `leaseRenewInterval` 再参选，让别的标签页先拿到。
   - solo 档：无效（没有别人可以接手）。
+- **R17** **主动抢主**（0.3.0，详见 [spec/request-leadership.md](request-leadership.md)）：
+  1. 只在参选中、还不是 Leader 时有效（含排队中、停摆接管中、租约等待或确认中、`relinquish()` 后等待重新参选）；已是 Leader、solo 档、`start()` 之前、暂停中、`destroy()` 之后调用无效，不改状态、不读写存储、不请求锁、不通知；
+  2. Web Locks 档：代次 +1 后以 `{ steal: true }` 请求锁，做法同 R6；原 Leader 按 R7（或先按 R5）让出；未授予就被拒绝按 R8a 降级；
+  3. 租约档：代次 +1 后不看现有租约直接写入自己的租约，等 `leaseConfirmDelay` 读回：仍是自己的就成为 Leader；已被别人覆盖就保持追随者、照常按 R10 参选，不自动重试；读写抛错按 R11 降级。原 Leader 在 `storage` 事件、续期核对或 I1 第 1 步的核对时让出；
+  4. 结果是异步的，R15 的回调配对照常成立；重复调用只当选一次；
+  5. 不退避、不限流：几个标签页先后调用时最后一个当选。
 - **R13** 生命周期由库自己注册监听，`destroy()` 时全部移除：
 
   | 事件 | 处理 |
@@ -255,6 +263,7 @@ export interface TabLeaderEnv {
 - 有 Web Locks 但没有 localStorage 时：不做停摆接管；上层「上次运行」只在内存里，每次刷新后会立即运行一次。
 - 后台计时器会被节流（桌面 Chrome 后台最多延迟约 1 分钟），上层实际间隔落在 `interval` 到 `interval + 1 分钟` 之间。
 - 被冻结的旧 Leader 恢复后的第一时间，可能还没收到 `AbortError`，也没轮到 R5 的检查，这期间它仍认为自己是 Leader。上层靠共享的「上次运行」记录保证不多跑；下层的业务回调需要自己能容忍这个短暂窗口。
+- `requestLeadership()`（R17）是这个窗口的另一种触发方式：原 Leader 被系统暂停（后台冻结、iOS 切到后台）时收不到 `AbortError` 和 `storage` 事件，恢复后、让出前与新 Leader 同时存在。租约档的抢主与普通参选一样只能尽力保证。
 
 ---
 
@@ -386,12 +395,12 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | Web Locks | 5 个标签页只有一个 Leader；Leader 关闭后其他标签页接手；排队中被暂停的标签页拿到锁后立即释放；Leader 被冻结超过 `stallTimeout` 后被接管；短暂挂起（未超过阈值）不被抢；被抢的旧 Leader 解冻后收到 `onFollower`、回到排队；R5：旧 Leader 发现存活记录不是自己的就先让出；没有存活记录时不抢 |
 | 租约 | 3 个标签页只有一个 Leader；正常关闭删掉租约、其他标签页立即接手；挂起超过有效期后被接手；旧 Leader 恢复后放弃；运行中存储失效降级为 solo；pagehide 时删掉租约 |
 | Web Locks 不可用 | `request()` 未授予就立即拒绝：存储可用时降到 `lease` 且只有一个 Leader，不可用时降到 `solo`；请求次数等于标签页数（不重试），真实事件循环没有被卡住；上层只运行一次（R8a） |
-| 通用 | 能力四种组合（有无 Web Locks × 有无 localStorage）；`strategy` 起始档；bfcache 暂停与恢复、重复 pageshow、普通加载的 pageshow；回调严格配对；回调抛错不打断状态机；`relinquish` 三档；`destroy` 移除全部监听、之后 `start` 无效；不同 `name` 互不影响 |
+| 通用 | 能力四种组合（有无 Web Locks × 有无 localStorage）；`strategy` 起始档；bfcache 暂停与恢复、重复 pageshow、普通加载的 pageshow；回调严格配对；回调抛错不打断状态机；`relinquish` 三档；`destroy` 移除全部监听、之后 `start` 无效；不同 `name` 互不影响；`requestLeadership`（R17）：两档下追随者抢主成功、原 Leader 收到 `onFollower`，原 Leader 冻结或错过 `AbortError`／`storage` 事件时恢复后让出，没有 localStorage 时照常，抢锁未授予即被拒绝时降级，租约确认前被覆盖则保持追随者不重试，写入抛错降级，原 Leader 不删新租约、不抢回，无效情况无副作用，重复调用只当选一次，先后抢主时最后一个当选，`relinquish` 后等待期间调用立即抢主且原定的重新参选不再触发 |
 | 上层 | 每个间隔只运行一次；接手时距上次不满间隔不运行；间隔严格（差 1 毫秒）；刷新 5 次只运行 1 次；key 变了立即运行；`check()`；切回前台、聚焦、计时器同时触发只运行一次；`run` 失败或抛错不影响下个周期；`key()` 抛错不触发运行；时钟回拨；运行中存储抛错；`canRun`（I7）：返回 `false` 时不读写记录、不调用 `key`／`run`，到期、`key` 变化、时钟回拨三条分支都被跳过，转 `true` 后 1 秒重试时补上，未到期则等到期，抛错按 `true`，`check()`／切回前台重新判断，`destroy()`／失去 Leader 后重试失效，`clearTimeout` 后仍触发的过期重试不起作用 |
 | 迁移兼容 | 用旧格式的 `:lease`、`:last` 记录启动，行为正确；不写存活记录的旧 Leader 不被抢 |
 | 环境 | 无 `window` 时 import 和 `start()` 都不报错，`mode` 为 `'none'`；创建时不访问任何浏览器 API |
 
-- **变异检查**：手动进行，每条变异都要有用例失败，结果记进计划文件。至少包括：去掉停摆接管；去掉被抢后让出；去掉 R5 的存活记录核对；停摆阈值改为 0；去掉时钟回拨保护；去掉租约降级；去掉排队时的代次检查；去掉 tick 前的租约核对；间隔判断从 `>=` 改成 `>` 或带容差；去掉回调配对保护；去掉 `destroy` 里移除监听的代码；I7 的去掉 `canRun` 调用、调用挪到读记录之后、跳过时仍写记录、重试间隔改 0 或改到期时间、去掉重试的代次检查、抛错按 `false`、假值即跳过。
+- **变异检查**：手动进行，每条变异都要有用例失败，结果记进计划文件。至少包括：去掉停摆接管；去掉被抢后让出；去掉 R5 的存活记录核对；停摆阈值改为 0；去掉时钟回拨保护；去掉租约降级；去掉排队时的代次检查；去掉 tick 前的租约核对；间隔判断从 `>=` 改成 `>` 或带容差；去掉回调配对保护；去掉 `destroy` 里移除监听的代码；I7 的去掉 `canRun` 调用、调用挪到读记录之后、跳过时仍写记录、重试间隔改 0 或改到期时间、去掉重试的代次检查、抛错按 `false`、假值即跳过；R17 的已是 Leader 时仍生效、去掉 solo 档判断（等价变异，solo 档不会处于参选中）、Web Locks 档去掉代次 +1、不带 `steal`、租约档去掉代次 +1、先看现有租约、去掉读回确认、确认失败自动重试、暂停或 `destroy()` 后仍生效。
 - **覆盖率**：语句和分支都 ≥ 90%（v8），没覆盖到的行要说明原因。
 
 ### 9.2 真实浏览器测试（Playwright，每次提交）
@@ -404,6 +413,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | `lease` 档（`strategy: 'lease'`）：同上 | ✅ | 用强制起始档模拟旧浏览器的租约路径 |
 | `solo` 档：每页都是 Leader | ✅ | — |
 | 上层：多页时一个间隔只运行一次 | ✅ | 间隔用很短的值 |
+| `requestLeadership()`（`locks`、`lease` 两档）：追随者页点示例页按钮后成为 Leader，原 Leader 收到 `onFollower`，之后只有一个 Leader | ✅ | 0.3.0 |
 | 冻结接管：Leader 页被冻结后由另一页接手，解冻后旧 Leader 让出 | 仅 Chromium | 通过 CDP `Debugger.pause` 暂停页面脚本来模拟冻结（锁仍被持有、存活记录停止更新）；`Page.setWebLifecycleState` 只冻结后台页，而自动化环境里页面始终是前台，实测无效；其他引擎没有对应能力 |
 | bfcache：`pagehide`／`pageshow` 后行为正确 | 尽力 | 自动化环境里 bfcache 是否生效因引擎而异，不生效时测试标记跳过并说明 |
 
@@ -478,3 +488,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 实现中修订（T11，范围内）：§9.2 冻结接管的模拟方式由 `Page.setWebLifecycleState` 改为 `Debugger.pause`，原因是前者在 Playwright 下对始终处于前台的页面不生效；场景与验收不变 |
 | 2026-11-13 | 缺陷修复（V5 实测发现）：新增 R8a，`request()` 还没拿到锁就被拒绝时降级而不重试，修复 Chrome 阻止所有网站数据时的微任务死循环；R8 限定为拿到锁之后的拒绝；§9.1 新增对应场景 |
 | 2026-11-19 | 新增 I7（`createTabInterval` 的可选参数 `canRun`，执行前跳过、固定 1 秒重试）：§2.2 加字段，§3.6 新增 I7 并在 I1 第 1 步引用，§9.1 加场景与变异条目；详见模块 Spec [interval-can-run](interval-can-run.md)。来源：仓库所有者 2026-11-19 批准接口方向，模块 Spec 与 Plan 已批准 |
+| 2026-11-25 | 新增 R17（`createTabLeader` 的公开方法 `requestLeadership()`，主动抢主）：§2.1 加方法，§3.4 新增 R17，§3.8 加已知限制，§9.1「通用」加场景、变异清单加条目，§9.2 加场景；详见模块 Spec [request-leadership](request-leadership.md)。来源：仓库所有者 2026-11-24 批准接口方向，模块 Spec（C26）与 Plan（C29）已批准。本文此前因 I7 处于「批准后已修订」待复审，本次改动随 request-leadership 最终验收一并复审 |

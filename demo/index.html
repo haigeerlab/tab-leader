@@ -114,6 +114,7 @@
           <dd id="strategy"></dd>
         </dl>
         <button id="relinquish" type="button">relinquish()</button>
+        <button id="request-leadership" type="button">requestLeadership()</button>
         <button id="destroy" type="button">destroy()</button>
       </section>
 
@@ -179,7 +180,8 @@
         },
         onFollower() {
           log('onFollower')
-          render()
+          // isLeader still reads true while onFollower runs; render once the step-down has finished.
+          setTimeout(render, 0)
         },
       })
 
@@ -201,6 +203,7 @@
       $('strategy').textContent = strategy
       $('interval').textContent = interval + ' ms'
       $('relinquish').onclick = () => leader.relinquish()
+      $('request-leadership').onclick = () => leader.requestLeadership()
       $('destroy').onclick = () => {
         leader.destroy()
         ticker.destroy()
