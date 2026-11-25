@@ -16,6 +16,8 @@ export interface Driver {
   /** Page came to the foreground. */
   onActive(): void
   onStorage(key: string): void
+  /** Take leadership from whoever holds it (R17). Called only while competing (`core.state` is 'waiting'). */
+  takeOver(): void
   /** How long to wait before competing again after `relinquish()`. */
   rejoinDelay: number
 }
@@ -59,6 +61,7 @@ export interface Hooks {
 export interface CoreHandle {
   start: () => void
   relinquish: () => void
+  requestLeadership: () => void
   destroy: () => void
   readonly isLeader: boolean
   readonly mode: TabLeaderMode
@@ -84,6 +87,7 @@ function soloDriver(core: Core): Driver {
     verify: () => true,
     onActive: () => {},
     onStorage: () => {},
+    takeOver: () => {},
     rejoinDelay: 0,
   }
 }
@@ -278,6 +282,12 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
     else join()
   }
 
+  /** R17: only while competing and not yet the leader; no effect in solo mode. */
+  function requestLeadership(): void {
+    if (state !== 'waiting' || mode === 'solo') return
+    driver!.takeOver()
+  }
+
   function destroy(): void {
     if (state === 'destroyed') return
     started = true
@@ -296,6 +306,7 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
   return {
     start,
     relinquish,
+    requestLeadership,
     destroy,
     get isLeader() {
       return state === 'leader'

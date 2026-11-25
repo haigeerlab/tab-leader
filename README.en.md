@@ -45,7 +45,14 @@ leader.isLeader      // whether this tab is the leader
 leader.mode          // 'locks' | 'lease' | 'solo' | 'none'
 leader.relinquish()  // step down voluntarily
 leader.destroy()     // stop
+
+// Since 0.3.0: take over when the page comes to the foreground; the old leader steps down and gets onFollower
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') leader.requestLeadership()
+})
 ```
+
+`requestLeadership()` only has an effect when this tab is not the leader, and it is asynchronous (`onLeader` is called as usual once elected). Do not call it unconditionally on `focus`: several windows visible side by side would keep taking over from each other. To have a frozen leader replaced within seconds, see [Fast takeover](docs/guide/api.md#快速接管) in the API reference.
 
 ### Periodic task: `createTabInterval`
 
@@ -122,6 +129,7 @@ The full comparison, and which ideas we borrowed from which library, are in the 
 ## Known limitations
 
 - `lease` mode only guarantees a single leader on a best-effort basis.
+- When `requestLeadership()` takes over from a leader that the system has paused (frozen in the background, iOS app in the background), the old leader still acts as leader for a moment after it resumes, until it steps down.
 - A forward jump of the system clock makes an interval look elapsed early; deduplicate on the server by server time if you need strict rate limiting.
 - Browsers throttle background timers, so the actual interval of `createTabInterval` can be up to about one minute longer than configured.
 - With Web Locks but no usable localStorage, there is no freeze takeover, and `createTabInterval` runs once immediately on every reload.

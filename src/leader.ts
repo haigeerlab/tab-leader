@@ -7,6 +7,7 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
   return {
     start: core.start,
     relinquish: core.relinquish,
+    requestLeadership: core.requestLeadership,
     destroy: core.destroy,
     get isLeader() {
       return core.isLeader

@@ -118,6 +118,7 @@ Playwright 在 Chromium、Firefox、WebKit **当前版本**上跑多标签页场
 | 8 | 在 Leader 标签页的地址栏打开 `/demo/?name=v5-8-elsewhere`，再按「后退」回来 | 回来后只有一个 Leader。日志里没有新的 `started` 说明页面是从 bfcache 恢复的，有就说明重新加载了，两种都记下来 |
 | 9 | （可选）在浏览器设置里禁用网站数据（Cookie 与网站数据），重新打开示例页 | `mode` 为 `solo`，页面正常、能操作（不卡死） |
 | 10 | **无痕模式**（Safari 13.1、iOS 12.4 必测，其他浏览器有条件再测）：打开一个无痕窗口，在里面开三个 `/demo/?name=v5-10&F` 的标签页，逐个查看 | 记录观察结果，不按通过或失败判定：三个标签页里有几个 Leader、`mode` 各是什么。**只有一个 Leader** 说明无痕标签页之间共享 localStorage；**每个都是 Leader 且 `mode` 为 `lease`** 说明各标签页的存储互相隔离，本库在这种情况下等同于各自运行，要写进 README 的「已知限制」 |
+| 11 | （0.3.0 起）关掉其他标签页，开三个 `/demo/?name=v5-11&F`，等出现 Leader 后，切到一个 Follower 标签页点「requestLeadership()」，再逐个查看 | 点的那个标签页几秒内变成 Leader，日志多一条 `onLeader`；原 Leader 显示 Follower，日志末尾是 `onFollower`；任何时候只有一个 Leader |
 
 第 6 步各浏览器的做法：
 
