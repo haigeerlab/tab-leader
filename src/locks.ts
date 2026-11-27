@@ -31,7 +31,7 @@ export function createLocksDriver(core: Core): Driver {
         return new Promise<void>((resolve) => {
           release = resolve
           lastWrite = null
-          core.becomeLeader()
+          core.becomeLeader(steal)
           if (core.state === 'leader' && myGen === core.gen) {
             beat()
           }

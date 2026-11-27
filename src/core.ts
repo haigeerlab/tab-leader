@@ -44,7 +44,8 @@ export interface Core {
   later(fn: () => void, ms: number): void
   /** Invalidate all pending callbacks without changing state or notifying. */
   newGeneration(): void
-  becomeLeader(): void
+  /** `takeover`: the lock was stolen from another holder, which may still be acting for a moment. */
+  becomeLeader(takeover?: boolean): void
   /** Leadership was taken away: notify, then compete again. */
   lose(): void
   /** The current mechanism is unusable: Web Locks falls back to lease (or solo without storage), lease to solo. */
@@ -64,6 +65,8 @@ export interface CoreHandle {
   requestLeadership: () => void
   destroy: () => void
   readonly isLeader: boolean
+  /** The current leadership was taken over from another holder (Web Locks steal, R6 or R17). */
+  readonly tookOver: boolean
   readonly mode: TabLeaderMode
   /** Ownership check right before doing leader work (I1 step 1). */
   verify: () => boolean
@@ -109,6 +112,7 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
   let mode: TabLeaderMode = 'none'
   let gen = 0
   let notifiedLeader = false
+  let tookOver = false
   let storage: Store | null = null
   let locks: TabLeaderLockManager | null = null
   let tabId = ''
@@ -179,9 +183,10 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
     newGeneration() {
       bump()
     },
-    becomeLeader() {
+    becomeLeader(takeover) {
       if (state !== 'waiting') return
       state = 'leader'
+      tookOver = !!takeover
       notify(true)
     },
     lose() {
@@ -310,6 +315,9 @@ export function createCore(options: TabLeaderOptions, hooks: Hooks): CoreHandle 
     destroy,
     get isLeader() {
       return state === 'leader'
+    },
+    get tookOver() {
+      return tookOver
     },
     get mode() {
       return mode

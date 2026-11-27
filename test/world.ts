@@ -8,6 +8,10 @@
  *   and delivered in order on `unfreeze` (real frozen pages run their tasks only after resuming).
  * - Closing a tab drops its held lock and queued lock requests; `crash` does so without `pagehide`.
  * - `jumpClock(ms)` changes the wall clock only; scheduled timers still fire after the real elapsed time.
+ * - `throttle` models Chrome with every tab hidden: timers fire on whole seconds, and chained timers
+ *   (nesting level 5 or more) only on whole minutes, so a timer chain wakes once a minute.
+ * - `storageLag` models localStorage across renderer processes: another tab's write becomes visible
+ *   to a tab's reads only after that many milliseconds; a tab always sees its own writes at once.
  */
 import type { TabLeaderEnv, TabLeaderLockManager } from '../src/types'
 
@@ -33,6 +37,8 @@ interface Timer {
   at: number
   fn: () => void
   owner: Tab
+  /** Timer nesting level: 1 when created outside a timer task, parent + 1 inside one. */
+  level: number
 }
 
 interface LockEntry {
@@ -57,15 +63,30 @@ export interface WorldOptions {
   storage?: 'ok' | 'none' | 'broken'
   /** Provide a global document. Default true. */
   document?: boolean
+  /** All tabs hidden with Chrome's intensive throttling (see the header). Default false. */
+  throttle?: boolean
+  /** Milliseconds before another tab's localStorage write is visible (see the header). Default 0. */
+  storageLag?: number
 }
 
 /** Let queued promise callbacks run (real macrotask; independent of the fake clock). */
 export const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
 
 export function createWorld(options: WorldOptions = {}) {
-  const { locks = true, locksReject = false, storage = 'ok', document = true } = options
+  const {
+    locks = true,
+    locksReject = false,
+    storage = 'ok',
+    document = true,
+    throttle = false,
+    storageLag = 0,
+  } = options
   let now = 1_000_000_000_000
   let seq = 0
+  /** Nesting level of the timer task running right now; 0 outside timer tasks. */
+  let level = 0
+  /** Every write per key, for `storageLag` reads. */
+  const history = new Map<string, Array<{ owner: Tab; at: number; value: string | null }>>()
   let tabSeq = 0
   const timers = new Map<number, Timer>()
   const frozen = new Set<Tab>()
@@ -183,21 +204,35 @@ export function createWorld(options: WorldOptions = {}) {
     const check = () => {
       if (world.storageBroken) throw new Error('storage broken')
     }
+    const record = (key: string, value: string | null) => {
+      if (!history.has(key)) history.set(key, [])
+      history.get(key)!.push({ owner, at: now, value })
+    }
     return {
       getItem(key) {
         check()
+        if (storageLag > 0) {
+          const writes = history.get(key) || []
+          for (let i = writes.length - 1; i >= 0; i--) {
+            const w = writes[i]!
+            if (w.owner === owner || w.at + storageLag <= now) return w.value
+          }
+          return null
+        }
         return store.has(key) ? store.get(key)! : null
       },
       setItem(key, value) {
         check()
         const oldValue = store.has(key) ? store.get(key)! : null
         store.set(key, String(value))
+        record(key, String(value))
         broadcast(key, oldValue, String(value))
       },
       removeItem(key) {
         check()
         const oldValue = store.has(key) ? store.get(key)! : null
         store.delete(key)
+        record(key, null)
         broadcast(key, oldValue, null)
       },
     }
@@ -240,10 +275,13 @@ export function createWorld(options: WorldOptions = {}) {
         timers.delete(next.id)
         now = Math.max(now, next.timer.at)
         // Like a browser: an exception in a task is reported, later tasks still run.
+        level = next.timer.level
         try {
           next.timer.fn()
         } catch (error) {
           world.errors.push(error)
+        } finally {
+          level = 0
         }
       }
       now = end
@@ -280,7 +318,13 @@ export function createWorld(options: WorldOptions = {}) {
         now: () => now,
         setTimeout(fn, ms) {
           const id = ++seq
-          timers.set(id, { at: now + Math.max(0, ms), fn, owner: tab })
+          const timerLevel = level + 1
+          let at = now + Math.max(0, ms)
+          if (throttle) {
+            const align = timerLevel >= 5 ? 60_000 : 1000
+            at = Math.ceil(at / align) * align
+          }
+          timers.set(id, { at, fn, owner: tab, level: timerLevel })
           return id
         },
         clearTimeout(id) {
