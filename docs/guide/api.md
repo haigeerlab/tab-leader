@@ -163,7 +163,7 @@ task.check()
 - `check()`、切回前台、成为 Leader 时也会先问 `canRun`；失去 Leader 或 `destroy()` 之后不再调用。
 - 只有 Leader 调用 `canRun`；Leader 跳过时其他标签页也不会运行。
 
-Web Locks 档的新 Leader 如果是**抢锁接手**的（原 Leader 被判定停摆），先等 **1 秒**再检查是否到期（固定间隔，不可配置），这 1 秒内 `check()`、切回前台也不运行。原因是原 Leader 可能就在同一时刻运行过，它写下的上次运行记录要过几毫秒才能被别的标签页读到。原 Leader 关闭、让出后的正常交接不等。
+Web Locks 档的新 Leader 如果是**抢锁接手**的（原 Leader 被判定停摆），先等 **1 秒**再检查是否到期（固定间隔，不可配置），这 1 秒内 `check()`、切回前台也不运行。原因是原 Leader 可能就在同一时刻运行过，它写下的上次运行记录要过几毫秒才能被别的标签页读到。原 Leader 关闭、让出后的正常交接不等。这 1 秒只作用于 `createTabInterval`：`createTabLeader` 无论是停摆接管还是调用 `requestLeadership()` 抢主，当选后都立即调用 `onLeader`，不等。
 
 ### 返回值 `TabInterval`
 
