@@ -5,6 +5,13 @@ import type { TabInterval, TabIntervalOptions } from './types'
 /** Fixed delay before asking `canRun` again after a skip (I7 step 4). */
 const RETRY_DELAY = 1000
 
+/**
+ * After taking the lock over (Web Locks steal), wait this long before the first tick. The previous holder
+ * may still run at the same moment (all tabs woken together by background throttling), and its write to
+ * `${name}:last` takes a few milliseconds to reach this tab's localStorage.
+ */
+const TAKEOVER_DELAY = 1000
+
 interface Last {
   at: number
   id: string
@@ -18,14 +25,26 @@ export function createTabInterval(options: TabIntervalOptions): TabInterval {
   let timer: unknown = null
   /** Bumped whenever leadership changes, so a stale timer cannot act. */
   let term = 0
+  /** Waiting out TAKEOVER_DELAY: no tick runs until it has passed. */
+  let settling = false
 
   const core = createCore(options, {
     onLeader() {
       term++
-      tick()
+      if (!core.tookOver) return tick()
+      settling = true
+      const myTerm = term
+      clear()
+      timer = core.env!.setTimeout(() => {
+        timer = null
+        if (myTerm !== term) return
+        settling = false
+        tick()
+      }, TAKEOVER_DELAY)
     },
     onFollower() {
       term++
+      settling = false
       clear()
     },
     onActive: () => tick(),
@@ -92,7 +111,7 @@ export function createTabInterval(options: TabIntervalOptions): TabInterval {
   }
 
   function tick(): void {
-    if (!core.isLeader || !core.verify()) return
+    if (settling || !core.isLeader || !core.verify()) return
     // Skip without touching the record, key() or run(); ask again shortly (I7).
     if (blocked()) {
       schedule(RETRY_DELAY)
@@ -121,6 +140,7 @@ export function createTabInterval(options: TabIntervalOptions): TabInterval {
     check: () => tick(),
     destroy() {
       term++
+      settling = false
       clear()
       core.destroy()
     },
