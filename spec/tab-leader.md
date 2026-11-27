@@ -1,6 +1,6 @@
 # Spec：tab-leader
 
-<!-- spec-guard: review approved 31262c2c540a -->
+<!-- spec-guard: review approved f572de33c535 -->
 
 > 状态：**已批准（仓库所有者，2026-11-13）**　｜　日期：2026-11-13　｜　版本目标：`0.1.0`
 > 相关文档：选型调研 [docs/research/selection.md](../docs/research/selection.md)、架构 [docs/architecture/overview.md](../docs/architecture/overview.md)、兼容性 [docs/compatibility.md](../docs/compatibility.md)、发布策略 [docs/release.md](../docs/release.md)。
@@ -178,9 +178,9 @@ export interface TabLeaderEnv {
 
 ### 3.3 租约档
 
-- **R9** 租约存在 `${name}:lease` = `{ tab, gen, exp }`；`tab` 和 `gen` 都是自己的、且 `exp > now` 才算持有。
-- **R10** 抢租约：租约没有或已过期时写入自己的租约，等 `leaseConfirmDelay` 后读回，仍是自己的才成为 Leader（两个标签页同时写，以最后写入的为准）。触发时机：参选时、每 `leaseRenewInterval`、收到 `${name}:lease` 的 `storage` 事件时。
-- **R11** 续期：Leader 每 `leaseRenewInterval` 先核对再续写；核对发现租约已不是自己的就失去 Leader；读写抛错就**降级为 solo**（先 `onFollower`，再以 solo 身份 `onLeader`）。Leader 收到租约的 `storage` 事件且发现不是自己的，也立即失去 Leader。
+- **R9** 租约存在 `${name}:lease` = `{ tab, gen, exp }`；`tab` 和 `gen` 都是自己的、且 `exp > now` 才算持有。`tab` 和 `gen` 都是自己的、但 `exp <= now`（没人覆盖，只是自己没来得及续期，例如后台节流推迟了计时器）不算持有，也不算别人的：按 R10、R11 由自己续写；`tab` 或 `gen` 不是自己的且已过期，算没有租约。
+- **R10** 抢租约：租约没有或已过期时写入自己的租约，等 `leaseConfirmDelay` 后读回，仍是自己的才成为 Leader（两个标签页同时写，以最后写入的为准）；读回时租约已过期、但 `tab` 和 `gen` 仍是自己的（读回被节流推迟到 `exp` 之后），说明没人覆盖：先续写，再成为 Leader，不放弃。触发时机：参选时、每 `leaseRenewInterval`、收到 `${name}:lease` 的 `storage` 事件时。
+- **R11** 续期：Leader 每 `leaseRenewInterval` 先核对再续写；核对发现租约已不是自己的就失去 Leader；核对时租约已过期、但 `tab` 和 `gen` 仍是自己的，就立即续写、不让出（I1 第 1 步、切回前台和 `storage` 事件触发的核对同样处理）；读写抛错就**降级为 solo**（先 `onFollower`，再以 solo 身份 `onLeader`）。Leader 收到租约的 `storage` 事件且发现不是自己的，也立即失去 Leader。
 - 这一档只能**尽力保证**：localStorage 没有原子的「读、判断、写」，后台计时器也不保证按时运行，两个 Leader 同时存在的窗口能缩得很短，但不能完全排除。文档必须写明（§3.8）。
 
 ### 3.4 通用
@@ -192,7 +192,7 @@ export interface TabLeaderEnv {
 - **R17** **主动抢主**（0.3.0，详见 [spec/request-leadership.md](request-leadership.md)）：
   1. 只在参选中、还不是 Leader 时有效（含排队中、停摆接管中、租约等待或确认中、`relinquish()` 后等待重新参选）；已是 Leader、solo 档、`start()` 之前、暂停中、`destroy()` 之后调用无效，不改状态、不读写存储、不请求锁、不通知；
   2. Web Locks 档：代次 +1 后以 `{ steal: true }` 请求锁，做法同 R6；原 Leader 按 R7（或先按 R5）让出；未授予就被拒绝按 R8a 降级；
-  3. 租约档：代次 +1 后不看现有租约直接写入自己的租约，等 `leaseConfirmDelay` 读回：仍是自己的就成为 Leader；已被别人覆盖就保持追随者、照常按 R10 参选，不自动重试；读写抛错按 R11 降级。原 Leader 在 `storage` 事件、续期核对或 I1 第 1 步的核对时让出；
+  3. 租约档：代次 +1 后不看现有租约直接写入自己的租约，等 `leaseConfirmDelay` 读回：仍是自己的就成为 Leader，读回时已过期但仍是自己的（没被覆盖）同 R10，续写后成为 Leader、不放弃；已被别人覆盖就保持追随者、照常按 R10 参选，不自动重试；读写抛错按 R11 降级。原 Leader 在 `storage` 事件、续期核对或 I1 第 1 步的核对时让出；
   4. 结果是异步的，R15 的回调配对照常成立；重复调用只当选一次；
   5. 不退避、不限流：几个标签页先后调用时最后一个当选。
 - **R13** 生命周期由库自己注册监听，`destroy()` 时全部移除：
@@ -234,6 +234,7 @@ export interface TabLeaderEnv {
   5. 重新安排计时器：`delay = max(0, last.at + interval - now)`，同一时间只保留一个计时器。
 - **I2** **间隔严格**：差 1 毫秒也不运行，没有容差；计时器提前触发只会重新安排。
 - **I3** tick 的触发时机：成为 Leader、计时器到期、切回前台（visibilitychange 变为 visible、focus、pageshow persisted）、`check()`。tick 是同步的，几个事件同时触发也只运行一次。
+  - 例外：Web Locks 档以抢锁（`{ steal: true }`，R6 停摆接管或 R17 主动抢主）当选时，不在成为 Leader 时立即 tick，而是等 1 秒再 tick；这 1 秒内 `check()`、切回前台都不运行 tick（I7 的 `canRun()` 也不调用），期间失去 Leader、暂停或销毁则这次等待作废。原因是原 Leader 可能同时还在运行，它写的 `${name}:last` 要几毫秒才到达本页。普通排队当选、租约档、solo 档不等待；这条只作用于 `createTabInterval`，`createTabLeader` 的 `onLeader` 照常立即调用。
 - **I4** `run()` 同步抛错和返回的 Promise 拒绝都被吞掉，不重试，不影响下一个周期。
 - **I5** 「上次运行」记录：localStorage 可用就放在 localStorage；不可用，或运行中读写抛错、内容损坏时，退回本页内存里的记录，不会因为读不到而提前运行。
 - **I6** solo 档（没有存储）每个标签页各自按 `interval` 运行，这是唯一不满足「全浏览器只跑一次」的情况。
@@ -489,3 +490,4 @@ export function createTabLeader(options: TabLeaderOptions): TabLeader {
 | 2026-11-13 | 缺陷修复（V5 实测发现）：新增 R8a，`request()` 还没拿到锁就被拒绝时降级而不重试，修复 Chrome 阻止所有网站数据时的微任务死循环；R8 限定为拿到锁之后的拒绝；§9.1 新增对应场景 |
 | 2026-11-19 | 新增 I7（`createTabInterval` 的可选参数 `canRun`，执行前跳过、固定 1 秒重试）：§2.2 加字段，§3.6 新增 I7 并在 I1 第 1 步引用，§9.1 加场景与变异条目；详见模块 Spec [interval-can-run](interval-can-run.md)。来源：仓库所有者 2026-11-19 批准接口方向，模块 Spec 与 Plan 已批准 |
 | 2026-11-25 | 新增 R17（`createTabLeader` 的公开方法 `requestLeadership()`，主动抢主）：§2.1 加方法，§3.4 新增 R17，§3.8 加已知限制，§9.1「通用」加场景、变异清单加条目，§9.2 加场景；详见模块 Spec [request-leadership](request-leadership.md)。来源：仓库所有者 2026-11-24 批准接口方向，模块 Spec（C26）与 Plan（C29）已批准。本文此前因 I7 处于「批准后已修订」待复审，本次改动随 request-leadership 最终验收一并复审 |
+| 2026-11-27 | 措辞对齐 T51 合入后的实现（T63）：T51 修复了强力后台节流下 locks 档间隔任务重复运行、lease 档选不出 Leader 的问题，Spec 措辞随之对齐，行为设计不变。R9 补「已过期但 `tab`、`gen` 仍是自己的」；R10、R17 第 3 步读回确认时遇到这种情况续写并当选、不放弃；R11 Leader 核对遇到这种情况续写、不让出；I3 补例外：Web Locks 档抢锁当选后 `createTabInterval` 先等 1 秒再 tick，期间 `check()`、切回前台不运行，`createTabLeader` 不受影响 |
