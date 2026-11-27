@@ -2,6 +2,12 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。0.x 期间次版本号可能包含破坏性变更，会在对应版本下单独标出，见[发布策略](docs/release.md)。
 
+## [未发布]
+
+### 修正
+
+- 文档：API 参考「快速接管」一节原说法「后台超过 5 分钟才强力节流」「所有标签页都在后台时可能每分钟换一次 Leader」与实测不符，按 Chrome 158 实测改正：强力节流约 60 秒就开始；所有标签页都在后台时，`lease` 档可能长时间没有 Leader，`locks` 档约每分钟换一次 Leader；`locks` 档 `createTabInterval` 在这种情况下实测出现同一 `interval` 内运行两次，列为已知问题、待修复。实测记录见兼容性文档 3.3 节。库的行为没有改。
+
 ## [0.3.0] - 2026-11-25
 
 试用版，发布到 npm `next` 标签，不移动 `latest`。没有破坏性变更：不调用新方法、不改时长参数时行为与 0.2.0 完全一致。这次改了选主逻辑，发布前要走完 V1～V5（见[发布策略](docs/release.md)）。

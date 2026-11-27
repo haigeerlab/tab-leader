@@ -108,9 +108,23 @@ const leader = createTabLeader({ name: 'my-app:socket', ...fastTakeover, onLeade
 
 ### 还没验证过的情况
 
-- 浏览器对在后台超过 5 分钟的页面做强力节流（计时器大约每分钟才执行一次）时，续租和存活记录会晚于 6 秒。**所有标签页都在后台时，可能每分钟换一次 Leader**。
-- iOS Safari 暂停后台标签页时同理。
-- 每次换 Leader 都会调 `onFollower`／`onLeader`，业务要能承受。前台标签页在变为可见时调用 [`requestLeadership()`](#主动抢主-requestleadership)，可以把 Leader 稳定在用户正在看的标签页上。
+**所有标签页都在后台**时，用这组参数会出问题。下面是 0.3.0 在 Chrome 158（macOS）上的实测，过程见[兼容性文档](../compatibility.md) 3.3 节：
+
+- **强力节流约 60 秒就开始**，不是 5 分钟：页面进入后台约 1 分钟后，计时器大约每分钟才执行一次，续租和存活记录都远晚于 6 秒。
+- **`lease` 档可能长时间没有 Leader**：原 Leader 约 1.5 分钟时因租约过期让出，之后每个标签页抢到租约后来不及确认就又过期了，直到观察结束（约 7.5 分钟）都没有 Leader，`createTabInterval` 也不再运行。
+- **`locks` 档约每分钟换一次 Leader**：锁始终有人持有，没有无 Leader 的空档；但每分钟 2～3 个标签页同时判定停摆、先后抢锁，几毫秒内 `onLeader` 被调好几次。
+- **已知问题，待修复**：这种情况下 `locks` 档的 `createTabInterval` 实测出现过两个标签页在同一个 `interval` 内各运行一次（9 分钟内 4 次，相隔 0～3 毫秒），不满足「每 `interval` 毫秒最多运行一次」。
+
+如果所有标签页都可能长时间在后台，不要用这组参数，或者让业务能容忍上面的情况。
+
+以下**未测**：
+
+- 默认时长参数下所有标签页都在后台。
+- 只有部分标签页在后台、至少一个在前台时，后台 Leader 是否会被误判停摆。
+- Chrome 以外的浏览器，以及接通电源时的 Chrome（本次实测用电池供电）。
+- iOS Safari 暂停后台标签页时，预计与上面类似。
+
+每次换 Leader 都会调 `onFollower`／`onLeader`，业务要能承受。前台标签页在变为可见时调用 [`requestLeadership()`](#主动抢主-requestleadership)，可以把 Leader 稳定在用户正在看的标签页上。
 
 ---
 
