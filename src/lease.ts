@@ -1,7 +1,8 @@
 import type { Core, Driver } from './core'
 import { isRecord, readJson, removeKey, writeJson } from './env'
 
-type LeaseState = 'mine' | 'held' | 'free' | 'failed'
+/** 'stale': still this tab's lease (same tab and generation, nobody overwrote it) but past `exp`. */
+type LeaseState = 'mine' | 'stale' | 'held' | 'free' | 'failed'
 
 /** localStorage lease mode (R9–R11). Best effort: localStorage has no atomic compare-and-set. */
 export function createLeaseDriver(core: Core): Driver {
@@ -13,9 +14,10 @@ export function createLeaseDriver(core: Core): Driver {
     const read = readJson(core.storage!, leaseKey)
     if (!read.ok) return 'failed'
     const lease = read.value
-    const now = core.env.now()
-    if (!isRecord(lease) || typeof lease.exp !== 'number' || lease.exp <= now) return 'free'
-    return lease.tab === core.tabId && lease.gen === core.gen ? 'mine' : 'held'
+    if (!isRecord(lease) || typeof lease.exp !== 'number') return 'free'
+    const own = lease.tab === core.tabId && lease.gen === core.gen
+    if (lease.exp <= core.env.now()) return own ? 'stale' : 'free'
+    return own ? 'mine' : 'held'
   }
 
   function writeLease(): boolean {
@@ -35,7 +37,11 @@ export function createLeaseDriver(core: Core): Driver {
     confirmLater()
   }
 
-  /** Read back after a moment: when two tabs write at once, the last writer wins (R10). */
+  /**
+   * Read back after a moment: when two tabs write at once, the last writer wins (R10).
+   * Background throttling can delay the read-back past `exp`; if the lease is still ours, nobody overwrote
+   * it, so we won: renew it, then lead.
+   */
   function confirmLater(): void {
     acquiring = true
     core.later(() => {
@@ -43,7 +49,8 @@ export function createLeaseDriver(core: Core): Driver {
       if (core.state !== 'waiting') return
       const confirmed = leaseState()
       if (confirmed === 'failed') core.degrade()
-      else if (confirmed === 'mine') core.becomeLeader()
+      else if (confirmed === 'stale' && !writeLease()) core.degrade()
+      else if (confirmed === 'mine' || confirmed === 'stale') core.becomeLeader()
     }, core.settings.leaseConfirmDelay)
   }
 
@@ -71,10 +78,19 @@ export function createLeaseDriver(core: Core): Driver {
     }, core.settings.leaseRenewInterval)
   }
 
-  /** Leader still owns the lease? Otherwise lose leadership (or degrade if storage failed). */
+  /**
+   * Leader still owns the lease? Otherwise lose leadership (or degrade if storage failed).
+   * A lease that expired while throttled timers kept us from renewing is still ours if nobody overwrote it:
+   * renew it at once instead of stepping down (R11).
+   */
   function verify(): boolean {
     const current = leaseState()
     if (current === 'mine') return true
+    if (current === 'stale') {
+      if (writeLease()) return true
+      core.degrade()
+      return false
+    }
     if (current === 'failed') core.degrade()
     else core.lose()
     return false
